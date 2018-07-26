@@ -4,6 +4,7 @@ enum CompressedPixelStorage {}
 
 pub struct Device {}
 
+/*
 trait ES20 {
     fn apply_pixel_storage_pack(mut self, storage: PixelStorage) -> Self;
     fn apply_pixel_storage_unpack(mut self, storage: PixelStorage) -> Self;
@@ -36,3 +37,4 @@ impl Device {
     fn query_features() {}
     fn query_feature() {}
 }
+*/

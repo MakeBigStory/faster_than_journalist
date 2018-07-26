@@ -1,3 +1,7 @@
+
+enum MeshPrimitive{}
+
+/*
 enum MeshPrimitive {
     /// Single points.
 //    Points = GL_POINTS,
@@ -25,9 +29,11 @@ enum MeshPrimitive {
     /// previous and center vertex.
 //    TriangleFan = GL_TRIANGLE_FAN,
 }
+*/
 
-struct Mesh {
-    primitive: MeshPrimitive,
+/*
+pub struct Mesh {
+    pub primitive: MeshPrimitive,
 }
 
 impl Mesh{
@@ -41,3 +47,5 @@ impl Mesh{
 
 
 }
+
+*/

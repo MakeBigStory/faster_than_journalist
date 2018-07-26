@@ -1,3 +1,5 @@
+
+/*
 struct RenderBuffer {}
 
 impl RenderBuffer {
@@ -14,3 +16,4 @@ impl RenderBuffer {
     fn get_label(mut self) {}
     fn set_label(mut self) {}
 }
+*/

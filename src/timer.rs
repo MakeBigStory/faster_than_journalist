@@ -1,3 +1,5 @@
+
+/*
 /// Timer can be used to find the time difference between the moment of timer creation and the
 /// moment of calling [`elapsed`](struct.Timer.html#method.get).
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -26,3 +28,4 @@ impl Timer {
         dt.as_secs() as f32 + 1e-9 * dt.subsec_nanos() as f32
     }
 }
+*/

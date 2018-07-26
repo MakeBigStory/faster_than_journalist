@@ -1,4 +1,21 @@
-struct Texture {}
+///Copyright reserve@feiper
+
+use gles::es20::data_struct as es20d;
+use gles::es30::data_struct as es30d;
+use gles::es31::data_struct as es31d;
+use gles::es32::data_struct as es32d;
+
+use gles::es20;
+use gles::es30;
+use gles::es31;
+use gles::es32;
+
+use std::ptr;
+use std::fmt;
+use std::fmt::Formatter;
+use std::error::Error;
+use std::mem;
+use std::ops::Range;
 
 enum TextureFormat {
     //Red = GL_RED,
@@ -50,6 +67,12 @@ enum TextureFormat {
 //RGBA16Snorm = GL_RGBA16_SNORM,
 }
 
+pub struct Texture {
+    label : String,
+
+}
+
+/*
 impl Texture {
     fn set_minification_filter() -> Self {}
     fn set_magnification_filter() -> Self {}
@@ -64,3 +87,4 @@ impl Texture {
     fn set_compressed_sub_image() -> Self {}
     fn generate_mipmap() -> Self {}
 }
+*/

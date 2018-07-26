@@ -1,3 +1,5 @@
+
+/*
 struct ShaderProgram {
     label: String,
     transform_feedback_varying_names: [String],
@@ -28,31 +30,15 @@ impl ShaderProgram {
     }
 
     fn link(mut self) -> bool {
-        unsafe { gl.LinkProgram(name) };
+
     }
 
     fn active(mut self) -> bool {
         //        gl.UseProgram(name);
     }
 
-    pub fn get_program_log(gl: &gl::Gl, name: n::Program) -> String {
-        let mut length = get_program_iv(gl, name, gl::INFO_LOG_LENGTH);
-        if length > 0 {
-            let mut log = String::with_capacity(length as usize);
-            log.extend(repeat('\0').take(length as usize));
-            unsafe {
-                gl.GetProgramInfoLog(
-                    name,
-                    length,
-                    &mut length,
-                    (&log[..]).as_ptr() as *mut gl::types::GLchar,
-                );
-            }
-            log.truncate(length as usize);
-            log
-        } else {
-            String::new()
-        }
+    pub fn get_program_log() -> String {
+
     }
 
     fn validate(mut self) -> bool {}
@@ -77,3 +63,4 @@ impl ShaderProgram {
 
     fn transform_feedback_varyings(&self, name: String) -> i32 {}
 }
+*/
