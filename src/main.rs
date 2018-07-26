@@ -16,7 +16,6 @@ mod timer;
 mod version;
 use device::Device;
 
-
 fn main() {
     println!("Hello, world!");
     let device = Device {};

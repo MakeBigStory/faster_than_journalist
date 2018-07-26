@@ -33,6 +33,7 @@ impl ShaderProgram {
 
     }
 
+    /// use current program
     fn active(mut self) -> bool {
         //        gl.UseProgram(name);
     }
@@ -59,8 +60,11 @@ impl ShaderProgram {
         //    glProgramParameteriEXT(_id, GL_PROGRAM_SEPARABLE_EXT, enabled ? GL_TRUE : GL_FALSE);
     }
 
-    fn uniform_location(&self, name: String) -> i32 {}
+    fn get_uniform_location(&self, name: String) -> i32 {}
+    fn get_uniform_block_index(&self, name: String) -> i32 {}
 
     fn transform_feedback_varyings(&self, name: String) -> i32 {}
+    fn set_transform_feedback_outputs(&self, name: String) -> i32 {}
+    fn set_transform_feedback_mode(&self, mode: TransformFeedbackBufferMode) -> i32 {}
 }
 */
