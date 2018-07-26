@@ -14,6 +14,7 @@ mod shader_program;
 mod texture;
 mod timer;
 mod version;
+mod format;
 use device::Device;
 
 fn main() {

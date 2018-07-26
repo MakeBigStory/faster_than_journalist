@@ -16,17 +16,18 @@ use std::fmt::Formatter;
 use std::error::Error;
 use std::mem;
 
+
 #[derive(Debug, Clone)]
-enum MemoryTarget{
-    ArrayBuffer = 0,
-    ElementArrayBuffer,
+pub enum BufferType {
+    ArrayBuffer = es20d::GL_ARRAY_BUFFER as isize,
+    ElementArrayBuffer = es20d::GL_ELEMENT_ARRAY_BUFFER as isize,
 
-    PackBuffer,
-    UnpackBuffer,
-    UniformBuffer,
+    PixelPackBuffer = es30d::GL_PIXEL_PACK_BUFFER as isize,
+    PixelUnpackBuffer = es30d::GL_PIXEL_UNPACK_BUFFER as isize,
+    UniformBuffer = es30d::GL_UNIFORM_BUFFER as isize,
 
-    TransformFeedbackBuffer,
-    DrawIndirectBuffer,
+    TransformFeedbackBuffer = es30d::GL_TRANSFORM_FEEDBACK_BUFFER as isize,
+    DrawIndirectBuffer = es31d::GL_DRAW_INDIRECT_BUFFER as isize,
 
     //feiper: for copy buffer to another
     //COPY_READ_BUFFER,
@@ -34,62 +35,50 @@ enum MemoryTarget{
 
 }
 
-fn memory_type_to_glsl_target(target: &MemoryTarget) -> es20d::GLenum {
-    match target {
-        MemoryTarget::ArrayBuffer => es20d::GL_ARRAY_BUFFER,
-        MemoryTarget::ElementArrayBuffer => es20d::GL_ELEMENT_ARRAY_BUFFER,
-        MemoryTarget::PackBuffer => es30d::GL_PIXEL_PACK_BUFFER,
-        MemoryTarget::UnpackBuffer => es30d::GL_PIXEL_UNPACK_BUFFER,
-        MemoryTarget::UnpackBuffer => es31d::GL_DRAW_INDIRECT_BUFFER,
-        MemoryTarget::UniformBuffer => es30d::GL_UNIFORM_BUFFER,
-        MemoryTarget::TransformFeedbackBuffer => es30d::GL_TRANSFORM_FEEDBACK_BUFFER,
-        MemoryTarget::DrawIndirectBuffer => es31d::GL_DRAW_INDIRECT_BUFFER,
-        //MemoryTarget::COPY_READ_BUFFER => es30d::GL_COPY_READ_BUFFER,
-        //MemoryTarget::COPY_WRITE_BUFFER => es30d::GL_COPY_WRITE_BUFFER,
+#[derive(Debug, Clone)]
+pub enum BufferUsage {
+    StreamDraw = es20d::GL_STREAM_DRAW as isize,
+    StreamRead = es30d::GL_STREAM_READ as isize,
+    StreamCopy = es30d::GL_STREAM_COPY as isize,
+
+    StaticDraw = es20d::GL_STATIC_DRAW as isize,
+    StaticRead = es30d::GL_STATIC_READ as isize,
+    StaticCopy = es30d::GL_STATIC_COPY as isize,
+
+    DynamicDraw = es20d::GL_DYNAMIC_DRAW as isize,
+    DynamicRead = es30d::GL_DYNAMIC_READ as isize,
+    DynamicCopy = es30d::GL_DYNAMIC_COPY as isize,
+}
+
+trait TransferEnum {
+    fn transfer(&self) -> es20d::GLenum;
+}
+
+impl TransferEnum for BufferType {
+    fn transfer(&self) -> es20d::GLenum {
+        let value = self.clone();
+        value as u32
     }
 }
 
-
-#[derive(Debug, Clone)]
-enum MemoryUsage{
-    StreamDraw = 0,
-    StreamRead,
-    StreamCopy,
-    StaticDraw,
-    StaticRead,
-    StaticCopy,
-    DynamicDraw,
-    DynamicRead,
-    DynamicCopy,
-}
-
-fn memory_usage_to_glsl_usage(usage: &MemoryUsage) -> es20d::GLenum {
-    match usage {
-        MemoryUsage::StreamDraw => es20d::GL_STREAM_DRAW,
-        MemoryUsage::StreamRead => es30d::GL_STREAM_READ,
-        MemoryUsage::StreamCopy => es30d::GL_STREAM_COPY,
-
-        MemoryUsage::StaticDraw => es20d::GL_STATIC_DRAW,
-        MemoryUsage::StaticRead => es30d::GL_STATIC_READ,
-        MemoryUsage::StaticCopy => es30d::GL_STATIC_READ,
-
-        MemoryUsage::DynamicDraw => es20d::GL_DYNAMIC_DRAW,
-        MemoryUsage::DynamicRead => es30d::GL_DYNAMIC_READ,
-        MemoryUsage::DynamicCopy => es30d::GL_DYNAMIC_COPY,
+impl TransferEnum for BufferUsage {
+    fn transfer(&self) -> es20d::GLenum {
+        let value = self.clone();
+        value as u32
     }
 }
 
 #[derive(Debug, Clone)]
-pub struct GPUMemoryDesc{
-    target: MemoryTarget,
-    usage: MemoryUsage,
+pub struct BufferDesc {
+    target: BufferType,
+    usage: BufferUsage,
     size: u32,
 }
 
-impl GPUMemoryDesc {
-    fn new(target: MemoryTarget, usage: MemoryUsage, size : u32)
-        -> GPUMemoryDesc {
-        GPUMemoryDesc{
+impl BufferDesc {
+    fn new(target: BufferType, usage: BufferUsage, size : u32)
+           -> BufferDesc {
+        BufferDesc {
             target,
             usage,
             size,
@@ -100,16 +89,17 @@ impl GPUMemoryDesc {
 #[derive(Clone, Debug)]
 pub struct Buffer {
     pub label: String,
-    memory: GPUMemoryDesc,
-    raw: u32,
+    desc: BufferDesc,
+    raw: Option<u32>,
 }
 
 impl Buffer {
     //if allocate a buffer without size, we will get size when write data automatically
-    pub fn new(name: String, desc: &GPUMemoryDesc) -> Self {
+    pub fn new(name: String, desc: &BufferDesc) -> Self {
         let raw = es20::wrapper::gen_buffers(1)[0];
-        let target = memory_type_to_glsl_target(&(desc.target));
-        let usage = memory_usage_to_glsl_usage(&desc.usage);
+
+        let target = desc.target.clone() as es20d::GLenum;
+        let usage = desc.usage.transfer();
 
         es20::wrapper::bind_buffer(target, raw);
         es20::wrapper::buffer_data(target,
@@ -120,15 +110,15 @@ impl Buffer {
 
         Buffer {
             label: name,
-            memory: desc.clone(),
-            raw,
+            desc: desc.clone(),
+            raw: Some(raw)
         }
     }
 
-    pub fn new_with_data<T>(name: String, desc: &GPUMemoryDesc, data: &[T]) -> Buffer {
+    pub fn new_with_data<T>(name: String, desc: &BufferDesc, data: &[T]) -> Buffer {
         let raw = es20::wrapper::gen_buffers(1)[0];
-        let target = memory_type_to_glsl_target(&(desc.target));
-        let usage = memory_usage_to_glsl_usage(&desc.usage);
+        let target = desc.target.transfer();
+        let usage = desc.usage.transfer();
 
         let real_size =  data.len() as usize * mem::size_of::<T>();
         if real_size != desc.size as usize {
@@ -144,26 +134,26 @@ impl Buffer {
 
         Buffer {
             label: name,
-            memory: desc.clone(),
-            raw,
+            desc: desc.clone(),
+            raw: Some(raw),
         }
     }
 
     //CPU data unpack to GPU
     pub fn write_buffer_data<T>(&self, offset: u32, size: u32, data :&[T])
         -> Option<&Buffer> {
-        if self.memory.size == 0 {
+        if self.desc.size == 0 {
             eprintln!("Buffer::write_data: hasn't been allocate a GPUMemory {:?}", self);
             return None;
         }
 
         let mut real_size = size;
-        if (offset + size) > self.memory.size {
-            eprintln!("Buffer::write_data: override GPUMemory {:?}, do clamp Operation", self.memory);
-            real_size = &self.memory.size - offset;
+        if (offset + size) > self.desc.size {
+            eprintln!("Buffer::write_data: override GPUMemory {:?}, do clamp Operation", self.desc);
+            real_size = &self.desc.size - offset;
         }
 
-        let target = memory_type_to_glsl_target(&self.memory.target);
+        let target = self.desc.target.transfer();
         self.bind();
         es20::wrapper::buffer_sub_data(target,
                                        offset as _,
@@ -174,12 +164,12 @@ impl Buffer {
     }
 
     fn bind(&self){
-        let target = memory_type_to_glsl_target(&self.memory.target);
-        es20::wrapper::bind_buffer(target, self.raw);
+        let target = self.desc.target.transfer();
+        es20::wrapper::bind_buffer(target, self.raw.unwrap());
     }
 
     fn unbind(&self){
-        let target = memory_type_to_glsl_target(&self.memory.target);
+        let target = self.desc.target.transfer();
         es20::wrapper::bind_buffer(target, 0);
     }
 }
