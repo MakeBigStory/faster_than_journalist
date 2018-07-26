@@ -31,3 +31,8 @@ impl ES20 for Device {
 }
 
 trait ES30 {}
+
+impl Device {
+    fn query_features() {}
+    fn query_feature() {}
+}
