@@ -1,0 +1,6 @@
+[package]
+name = "faster_than_journalist"
+version = "0.1.0"
+authors = ["Michael-LAI JINFENG <cihv2@163.com>"]
+
+[dependencies]
