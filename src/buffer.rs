@@ -1,15 +1,12 @@
-
-
 use gles::es20::data_struct as es20d;
 use gles::es30::data_struct as es30d;
 use gles::es31::data_struct as es31d;
 use gles::es32::data_struct as es32d;
 
 use gles::es20;
-use gles::es31;
 use gles::es30;
+use gles::es31;
 use gles::es32;
-
 
 #[derive(Copy, Debug, Clone, Drop)]
 pub struct Buffer {
@@ -30,6 +27,4 @@ impl Buffer {
             size: 0,
         }
     }
-
-
 }
