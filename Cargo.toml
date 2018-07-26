@@ -4,3 +4,4 @@ version = "0.1.0"
 authors = ["Michael-LAI JINFENG <cihv2@163.com>"]
 
 [dependencies]
+opengles-rs = {path = "opengles-rs", version = "0.1.0"}
