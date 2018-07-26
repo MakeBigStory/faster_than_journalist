@@ -1,8 +1,29 @@
-struct ColorAttachment {}
 
-struct DrawAttachment {}
+use gles::es20::data_struct as es20d;
+use gles::es30::data_struct as es30d;
+use gles::es31::data_struct as es31d;
+use gles::es32::data_struct as es32d;
 
-struct BufferAttachment {}
+use gles::es20;
+use gles::es30;
+use gles::es31;
+use gles::es32;
+
+use std::ptr;
+use std::fmt;
+use std::fmt::Formatter;
+use std::error::Error;
+use std::mem;
+
+
+#[derive(Clone, Debug)]
+enum AttachmentType{
+    ColorAttach,
+    DepthAttach,
+    StencilAttach,
+    DepthStencil,
+}
+
 
 enum Status {
     /** The framebuffer is complete */

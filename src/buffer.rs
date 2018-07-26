@@ -1,3 +1,5 @@
+///Copyright reserve@feiper
+
 use gles::es20::data_struct as es20d;
 use gles::es30::data_struct as es30d;
 use gles::es31::data_struct as es31d;
@@ -12,6 +14,7 @@ use std::ptr;
 use std::fmt;
 use std::fmt::Formatter;
 use std::error::Error;
+use std::mem;
 
 #[derive(Debug, Clone)]
 enum MemoryTarget{
@@ -96,7 +99,7 @@ impl GPUMemoryDesc {
 
 #[derive(Clone, Debug)]
 pub struct Buffer {
-    pub name: String,
+    pub label: String,
     memory: GPUMemoryDesc,
     raw: u32,
 }
@@ -116,7 +119,7 @@ impl Buffer {
         es20::wrapper::bind_buffer(target, 0);
 
         Buffer {
-            name,
+            label: name,
             memory: desc.clone(),
             raw,
         }
@@ -127,9 +130,10 @@ impl Buffer {
         let target = memory_type_to_glsl_target(&(desc.target));
         let usage = memory_usage_to_glsl_usage(&desc.usage);
 
-        //if data.len() * std::mem::size::<T>() > desc.size {
-        //    panic!("Buffer::new_with_data: data bytes greater than  GPUMemory size {:?}", desc);
-        //}
+        let real_size =  data.len() as usize * mem::size_of::<T>();
+        if real_size != desc.size as usize {
+            panic!("Buffer::new_with_data: data bytes greater than  GPUMemory size {:?}", desc);
+        }
 
         es20::wrapper::bind_buffer(target, raw);
         es20::wrapper::buffer_data(target,
@@ -139,7 +143,7 @@ impl Buffer {
         es20::wrapper::bind_buffer(target, 0);
 
         Buffer {
-            name,
+            label: name,
             memory: desc.clone(),
             raw,
         }
