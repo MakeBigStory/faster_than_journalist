@@ -42,6 +42,8 @@ impl ShaderProgram {
 
     }
 
+    // todo: 补充设置Attribute, uniform的数据接口
+
     fn validate(mut self) -> bool {}
 
     fn dispatch_compute(mut self) -> bool {}
