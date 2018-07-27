@@ -150,6 +150,7 @@ struct Shader {
 //
 //    }
 
+// todo: 备用方案，分配buf = Vec::with_capacity比String方案更快？
 //    #[inline]
 //    pub fn check_shader_status(shader: GLuint) -> GLuint {
 //        let mut status = 0;
