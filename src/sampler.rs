@@ -1,4 +1,3 @@
-///Copyright reserve@feiper
 use gles::es20::data_struct as es20d;
 use gles::es30::data_struct as es30d;
 use gles::es31::data_struct as es31d;
@@ -43,6 +42,8 @@ pub enum FilterMode {
     Nearest = es20d::GL_NEAREST as isize,
     /// Linear interpolation filtering.
     Linear = es20d::GL_LINEAR as isize,
+
+    /// Texture sampler mip level selection
     NearestMipmapNearest = es20d::GL_NEAREST_MIPMAP_NEAREST as isize,
     LinearMipmapNearest = es20d::GL_LINEAR_MIPMAP_NEAREST as isize,
     NearestMipmapLinear = es20d::GL_NEAREST_MIPMAP_LINEAR as isize,

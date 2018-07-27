@@ -1,5 +1,3 @@
-///copyright reserve@feiper
-///
 #[derive(Debug, Clone)]
 pub struct Color {
     pub R: f32,
