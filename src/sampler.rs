@@ -23,7 +23,7 @@ fn glenum_to_isize(value: es20d::GLenum) -> isize {
 }
 
 
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 pub enum WrapMode {
     Repeat = es20d::GL_REPEAT as isize,
     MirroredRepeat = es20d::GL_MIRRORED_REPEAT as isize,
@@ -32,7 +32,7 @@ pub enum WrapMode {
 }
 
 
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 pub enum FilterMode{
     Nearest = es20d::GL_NEAREST as isize,
     Linear = es20d::GL_LINEAR as isize,
@@ -42,7 +42,7 @@ pub enum FilterMode{
     LinearMipmapLinear = es20d::GL_LINEAR_MIPMAP_LINEAR as isize,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum DepthFunc {
     LeQual = es20d::GL_LEQUAL as isize,
     GeQual = es20d::GL_GEQUAL as isize,
@@ -54,13 +54,13 @@ pub enum DepthFunc {
     Never = es20d::GL_NEVER as isize,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum ComparisonMod {
     None = es20d::GL_NONE as isize,
     CompareRefToTexture = es30d::GL_COMPARE_REF_TO_TEXTURE as isize,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
 pub struct Wrap{
     pub R : WrapMode,
     pub S : WrapMode,
@@ -77,7 +77,7 @@ impl Wrap {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
 pub struct Filter {
     pub min : FilterMode,
     pub mag : FilterMode,

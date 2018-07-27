@@ -19,7 +19,7 @@ use std::ops::Range;
 
 /// the pixel data outside, only 6 symbolic values are accepted
 /// RED,RG,RGB,RGBA
-//#[derive(Clone, Debug)]
+//#[derive(Copy, Clone, Debug)]
 /*pub enum TextureFormat {
     //basic format
     DepthComponent,
@@ -148,7 +148,7 @@ use std::ops::Range;
     CompressedRgbBptcUnsignedFloat,
 }
 */
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 pub enum TextureFormat {
     //basic format
     DepthComponent = es20d::GL_DEPTH_COMPONENT as isize,
@@ -157,7 +157,7 @@ pub enum TextureFormat {
 }
 
 // out format, Like glTexImage2D func used
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 pub enum Format {
     Byte = es20d::GL_BYTE as isize,
     UnsignedByte = es20d::GL_UNSIGNED_BYTE as isize,
