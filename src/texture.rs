@@ -97,6 +97,10 @@ pub struct TextureDesc {
     pub size: Extend<u32>,
     pub board_size: u32,
     pub format: TextureFormat,
+
+    //Todo: 支持多重采样的纹理以及压缩纹理
+    pub support_multiple_sampler: bool,
+    pub support_compress: bool,
 }
 
 impl TextureDesc {
@@ -112,6 +116,8 @@ impl TextureDesc {
             size,
             board_size: 0,
             format: TextureFormat::RGBA,
+            support_multiple_sampler: false,
+            support_compress: false,
         }
     }
 
@@ -129,6 +135,8 @@ impl TextureDesc {
             size,
             board_size: 0,
             format: TextureFormat::RGBA,
+            support_multiple_sampler: false,
+            support_compress: false,
         }
     }
 
@@ -295,7 +303,7 @@ impl Texture {
     pub fn set_lod_bias(&mut self, lod_bias: f32) {
         //TODO:
     }
-    pub fn set_wrapping(&mut self, wrap: Wrap) {
+    pub fn set_wrap(&mut self, wrap: Wrap) {
         self.bind();
         self.desc.wrap = wrap.clone();
         es20::wrapper::tex_parameteri(self.desc.texture_type as _,
@@ -390,5 +398,11 @@ impl Texture {
         unsafe {
             es20::ffi::glBindTexture(self.desc.texture_type as _, self.raw);
         }
+    }
+}
+
+impl Drop for Texture {
+    fn drop(&mut self) {
+        es20::wrapper::delete_textures([self.raw]);
     }
 }

@@ -15,17 +15,23 @@ use std::fmt;
 use std::fmt::Formatter;
 use std::error::Error;
 use std::mem;
+use texture::*;
 
-
-#[derive(Clone, Debug)]
-enum AttachmentType{
+#[derive(Copy, Clone, Debug)]
+enum AttachmentUsage{
     ColorAttach,
     DepthAttach,
     StencilAttach,
     DepthStencil,
 }
 
+#[derive(Copy, Debug)]
+enum Attachment{
+    TextureAttachment(),
+    RenderBufferAttachment,
+}
 
+#[derive(Copy, Clone, Debug)]
 enum FrameBufferStatus {
     /** The framebuffer is complete */
     Complete = GL_FRAMEBUFFER_COMPLETE,
@@ -48,6 +54,19 @@ enum FrameBufferStatus {
     //IncompleteMultisample = GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_APPLE,
 }
 
+#[derive(Clone, Debug)]
+pub struct AttachmentDesc {
+    label: String,
+    attach_type: AttachmentUsage,
+    attach_t
+}
+
+#[derive(Clone, Debug)]
+pub struct FrameBufferDesc {
+
+}
+
+#[derive(Clone, Debug)]
 struct FrameBuffer {
     label: String,
     status: Status,
