@@ -17,7 +17,8 @@ use std::error::Error;
 use std::mem;
 
 
-#[derive(Debug, Clone)]
+// TODO: 为什么不能直接 as u32?
+#[derive(Copy, Debug, Clone)]
 pub enum BufferType {
     ArrayBuffer = es20d::GL_ARRAY_BUFFER as isize,
     ElementArrayBuffer = es20d::GL_ELEMENT_ARRAY_BUFFER as isize,
@@ -35,7 +36,7 @@ pub enum BufferType {
 
 }
 
-#[derive(Debug, Clone)]
+#[derive(Copy, Debug, Clone)]
 pub enum BufferUsage {
     /// Set once by the application and used infrequently for drawing.
     StreamDraw = es20d::GL_STREAM_DRAW as isize,
@@ -57,24 +58,6 @@ pub enum BufferUsage {
     DynamicRead = es30d::GL_DYNAMIC_READ as isize,
     /// Updated frequently as output from OpenGL command and used frequently for drawing or copying to other images.
     DynamicCopy = es30d::GL_DYNAMIC_COPY as isize,
-}
-
-trait TransferEnum {
-    fn transfer(&self) -> es20d::GLenum;
-}
-
-impl TransferEnum for BufferType {
-    fn transfer(&self) -> es20d::GLenum {
-        let value = self.clone();
-        value as u32
-    }
-}
-
-impl TransferEnum for BufferUsage {
-    fn transfer(&self) -> es20d::GLenum {
-        let value = self.clone();
-        value as u32
-    }
 }
 
 #[derive(Debug, Clone)]
@@ -117,7 +100,7 @@ impl Buffer {
         let raw = es20::wrapper::gen_buffers(1)[0];
 
         let target = desc.target.clone() as es20d::GLenum;
-        let usage = desc.usage.transfer();
+        let usage = desc.usage as u32;
 
         es20::wrapper::bind_buffer(target, raw);
         es20::wrapper::buffer_data(target,
