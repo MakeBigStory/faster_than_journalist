@@ -1,5 +1,3 @@
-///Copyright reserve@feiper
-
 use gles::es20::data_struct as es20d;
 use gles::es30::data_struct as es30d;
 use gles::es31::data_struct as es31d;
@@ -17,7 +15,8 @@ use std::error::Error;
 use std::mem;
 
 
-#[derive(Debug, Clone)]
+// TODO: 为什么不能直接 as u32?
+#[derive(Copy, Debug, Clone)]
 pub enum BufferType {
     ArrayBuffer = es20d::GL_ARRAY_BUFFER as isize,
     ElementArrayBuffer = es20d::GL_ELEMENT_ARRAY_BUFFER as isize,
@@ -35,7 +34,7 @@ pub enum BufferType {
 
 }
 
-#[derive(Debug, Clone)]
+#[derive(Copy, Debug, Clone)]
 pub enum BufferUsage {
     /// Set once by the application and used infrequently for drawing.
     StreamDraw = es20d::GL_STREAM_DRAW as isize,
@@ -59,24 +58,6 @@ pub enum BufferUsage {
     DynamicCopy = es30d::GL_DYNAMIC_COPY as isize,
 }
 
-trait TransferEnum {
-    fn transfer(&self) -> es20d::GLenum;
-}
-
-impl TransferEnum for BufferType {
-    fn transfer(&self) -> es20d::GLenum {
-        let value = self.clone();
-        value as u32
-    }
-}
-
-impl TransferEnum for BufferUsage {
-    fn transfer(&self) -> es20d::GLenum {
-        let value = self.clone();
-        value as u32
-    }
-}
-
 #[derive(Debug, Clone)]
 pub struct BufferDesc {
     pub label: String,
@@ -96,11 +77,11 @@ impl BufferDesc {
         }
     }
 
-    fn set_lable(&mut self, label: String) {
+    fn set_label(&mut self, label: String) {
         self.label = label;
     }
 
-    fn get_lable(&self) -> &String {
+    fn get_label(&self) -> &String {
         &self.label
     }
 }
@@ -117,7 +98,7 @@ impl Buffer {
         let raw = es20::wrapper::gen_buffers(1)[0];
 
         let target = desc.target.clone() as es20d::GLenum;
-        let usage = desc.usage.transfer();
+        let usage = desc.usage as u32;
 
         es20::wrapper::bind_buffer(target, raw);
         es20::wrapper::buffer_data(target,
@@ -134,8 +115,8 @@ impl Buffer {
 
     pub fn new_with_data<T>(name: String, desc: &BufferDesc, data: &[T]) -> Buffer {
         let raw = es20::wrapper::gen_buffers(1)[0];
-        let target = desc.target.transfer();
-        let usage = desc.usage.transfer();
+        let target = desc.target as u32;
+        let usage = desc.usage as u32;
 
         let real_size =  data.len() as usize * mem::size_of::<T>();
         if real_size != desc.size as usize {
@@ -169,7 +150,7 @@ impl Buffer {
             real_size = &self.desc.size - offset;
         }
 
-        let target = self.desc.target.transfer();
+        let target = self.desc.target as u32;
         self.bind();
         es20::wrapper::buffer_sub_data(target,
                                        offset as _,
@@ -180,12 +161,12 @@ impl Buffer {
     }
 
     fn bind(&self){
-        let target = self.desc.target.transfer();
+        let target = self.desc.target as u32;
         es20::wrapper::bind_buffer(target, self.raw.unwrap());
     }
 
     fn unbind(&self){
-        let target = self.desc.target.transfer();
+        let target = self.desc.target as u32;
         es20::wrapper::bind_buffer(target, 0);
     }
 }

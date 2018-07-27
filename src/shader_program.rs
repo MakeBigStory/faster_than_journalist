@@ -1,17 +1,18 @@
 
-/*
+#[derive(Debug)]
 struct ShaderProgram {
     label: String,
     transform_feedback_varying_names: [String],
 }
 
 impl ShaderProgram {
-    fn get_label() -> String {
-        label
+    fn get_label(&mut self) -> &String {
+        &(self.label)
     }
 
-    fn set_label(mut self, label: String) {
-        self.label = label
+    fn set_label(&mut self, label: &String) -> &mut Self {
+        self.label = label.clone();
+        self
     }
 
     fn attach_shader(mut self, shader: Shader) {
@@ -62,6 +63,7 @@ impl ShaderProgram {
         //    glProgramParameteriEXT(_id, GL_PROGRAM_SEPARABLE_EXT, enabled ? GL_TRUE : GL_FALSE);
     }
 
+    fn get_attribute_location(&self, name: String) -> i32 {}
     fn get_uniform_location(&self, name: String) -> i32 {}
     fn get_uniform_block_index(&self, name: String) -> i32 {}
 
@@ -69,4 +71,3 @@ impl ShaderProgram {
     fn set_transform_feedback_outputs(&self, name: String) -> i32 {}
     fn set_transform_feedback_mode(&self, mode: TransformFeedbackBufferMode) -> i32 {}
 }
-*/

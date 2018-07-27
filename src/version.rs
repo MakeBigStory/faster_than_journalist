@@ -1,5 +1,5 @@
 
-enum Version {
+enum ESVersion {
     GLES200,
     GLES300,
     GLES310,

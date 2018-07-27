@@ -1,4 +1,4 @@
-///Copyright reserve@feiper
+
 
 use gles::es20::data_struct as es20d;
 use gles::es30::data_struct as es30d;
