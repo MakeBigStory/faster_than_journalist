@@ -19,6 +19,8 @@ use std::ops::Range;
 use sampler::*;
 use format::*;
 
+// todo: 宽高为非2的n次方纹理的处理
+
 #[derive(Copy, Clone, Debug)]
 pub enum TextureType {
     Texture2d = es20d::GL_TEXTURE_2D as isize,
@@ -140,11 +142,11 @@ impl TextureDesc {
         }
     }
 
-    fn set_lable(&mut self, label: String) {
+    fn set_label(&mut self, label: String) {
         self.label = label;
     }
 
-    fn get_lable(&self) -> &String {
+    fn get_label(&self) -> &String {
         &self.label
     }
 
@@ -183,7 +185,7 @@ impl TextureDesc {
 
 pub struct Texture {
     pub desc: TextureDesc,
-    pub raw: u32,
+    pub id: u32,
     pub use_swizzle: bool,
     pub use_sampler: bool,
 
@@ -215,7 +217,7 @@ impl Texture {
 
         Texture {
             desc: desc.clone(),
-            raw,
+            id: raw,
             use_swizzle: false,
             use_sampler: false,
 
@@ -267,7 +269,7 @@ impl Texture {
 
         Texture {
             desc: desc.clone(),
-            raw,
+            id: raw,
             use_swizzle: false,
             use_sampler: false,
 
@@ -361,7 +363,6 @@ impl Texture {
             es20::wrapper::generate_mipmap(self.desc.texture_type as _);
         }
         self.unbind();
-
     }
 
     pub fn set_compressed_image(&mut self) {
@@ -369,7 +370,23 @@ impl Texture {
     }
 
     pub fn set_compressed_sub_image(&mut self) {
-        //TODO:
+        //TODO: 与非压缩版区别是image_size参数
+//        self.bind();
+//        es20::wrapper::compressed_tex_sub_image_2d(self.desc.texture_type as _,
+//                                        self.desc.level as _,
+//                                        offset_x as _,
+//                                        offset_y as _,
+//                                        width as _,
+//                                        height as _,
+//                                        self.current_out_pixel_format as _,
+//                                        self.current_out_pixel_type as _,
+//                                        data,
+//        );
+//
+//        if self.use_mip_map {
+//            es20::wrapper::generate_mipmap(self.desc.texture_type as _);
+//        }
+//        self.unbind();
     }
 
     pub fn generate_mipmap(&self) {
@@ -388,15 +405,58 @@ impl Texture {
         self.use_swizzle = flag;
     }
 
+    #[inline]
     pub fn bind(&self) {
         unsafe {
-            es20::ffi::glBindTexture(self.desc.texture_type as _, self.raw);
+            es20::ffi::glBindTexture(self.desc.texture_type as _, self.id);
         }
     }
 
+    #[inline]
     pub fn unbind(&self) {
         unsafe {
-            es20::ffi::glBindTexture(self.desc.texture_type as _, self.raw);
+            es20::ffi::glBindTexture(self.desc.texture_type as _, self.id);
+        }
+    }
+
+    #[inline(always)]
+    pub fn id(&self) -> GLuint {
+        self.id
+    }
+    #[inline(always)]
+    pub fn width(&self) -> usize {
+        self.desc.size.width as usize
+    }
+    #[inline(always)]
+    pub fn height(&self) -> usize {
+        self.desc.size.height as usize
+    }
+
+    #[inline(always)]
+    pub fn format(&self) -> DataFormat {
+        self.format
+    }
+    #[inline(always)]
+    pub fn filter(&self) -> FilterMode {
+        self.filter
+    }
+    #[inline(always)]
+    pub fn wrap(&self) -> Wrap {
+        self.wrap
+    }
+    #[inline(always)]
+    pub fn mipmap(&self) -> bool {
+        self.mipmap
+    }
+}
+
+impl Drop for GLTexture {
+    #[inline]
+    fn drop(&mut self) {
+        if self.id != 0 {
+            unsafe {
+                gl::DeleteTextures(1, &self.id);
+            }
         }
     }
 }

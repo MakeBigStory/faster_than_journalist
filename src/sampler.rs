@@ -172,11 +172,11 @@ impl SamplerDesc {
         }
     }
 
-    fn set_lable(&mut self, label: String) {
+    fn set_label(&mut self, label: String) {
         self.label = label;
     }
 
-    fn get_lable(&self) -> &String {
+    fn get_label(&self) -> &String {
         &self.label
     }
 
@@ -245,7 +245,7 @@ impl Sampler {
     fn write_desc(&self) {
         let name = match self.raw {
             Some(data) => data,
-            None => panic!("Error: Sampler: write_desc , the raw is null"),
+            None => panic!("Error: Sampler: write_desc , the id is null"),
         };
 
         unsafe {
