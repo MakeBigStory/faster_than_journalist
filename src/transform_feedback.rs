@@ -1,4 +1,10 @@
-enum TransformFeedbackBufferMode {}
+enum TransformFeedbackBufferMode {
+    /// Attributes will be interleaved at one buffer binding point
+    InterleavedAttributes = GL_INTERLEAVED_ATTRIBS,
+
+    /// Each attribute will be put into separate buffer binding point
+    SeparateAttributes = GL_SEPARATE_ATTRIBS,
+}
 
 enum TransformFeedbackPrimitiveMode {
     /// Points.
