@@ -48,7 +48,7 @@ pub enum DepthFunc {
     GeQual = es20d::GL_GEQUAL as isize,
     Less = es20d::GL_LESS as isize,
     Greater = es20d::GL_GREATER as isize,
-    Equal = es20d::GL_LEQUAL as isize,
+    Equal = es20d::GL_EQUAL as isize,
     NotEqual = es20d::GL_NOTEQUAL as isize,
     Always = es20d::GL_ALWAYS as isize,
     Never = es20d::GL_NEVER as isize,
@@ -120,7 +120,7 @@ impl SamplerComparison{
 #[derive(Debug, Clone)]
 pub struct SamplerDesc {
     pub lod: Range<u32>,
-    pub lod_bias: u32,
+    pub lod_bias: f32,
     pub wrap: Wrap,
     pub filter: Filter,
     pub edge_sampler_mod: WrapMode,
@@ -134,7 +134,7 @@ impl SamplerDesc {
         let lod_range = Range{start:0, end: 1};
         SamplerDesc {
             lod: lod_range,
-            lod_bias: 0,
+            lod_bias: 0f32,
             wrap: Wrap::new(),
             filter: Filter::new(),
             edge_sampler_mod: WrapMode::Repeat,
@@ -148,7 +148,7 @@ impl SamplerDesc {
     filter: Filter) -> SamplerDesc {
         SamplerDesc {
             lod: lod_range,
-            lod_bias: 0,
+            lod_bias: 0f32,
             wrap,
             filter,
             edge_sampler_mod: WrapMode::Repeat,
@@ -170,7 +170,7 @@ impl SamplerDesc {
         self.lod = lod;
     }
 
-    pub fn set_lod_bias(&mut self, bias: u32) {
+    pub fn set_lod_bias(&mut self, bias: f32) {
         self.lod_bias = bias;
     }
 
@@ -225,28 +225,42 @@ impl Sampler{
     }
 
     fn write_desc(&self) {
-        let name = match &self.raw {
-            Some(data) => data.unwrap(),
+        let name = match self.raw {
+            Some(data) => data,
             None => {panic!("Error: Sampler: write_desc , the raw is null")},
         };
 
         unsafe {
 
-            es30::ffi::glSamplerParameterf(name, gl::TEXTURE_MAX_ANISOTROPY_EXT, fac as GLfloat);
-            es30::ffi::glSamplerParameteri(name, gl::TEXTURE_MIN_FILTER, min as GLint);
-            es30::ffi::glSamplerParameteri(name, gl::TEXTURE_MAG_FILTER, mag as GLint);
+            //TODO: set anisotropy in es?
+            //es30::ffi::glSamplerParameterf(name, gl::TEXTURE_MAX_ANISOTROPY_EXT, sel);
+            es30::ffi::glSamplerParameteri(name, es20d::GL_TEXTURE_MIN_FILTER,
+                                           self.desc.filter.min.clone() as _);
+            es30::ffi::glSamplerParameteri(name, es20d::GL_TEXTURE_MAG_FILTER,
+                                           self.desc.filter.mag.clone() as _);
 
-            let (s, t, r) = info.wrap_mode;
-            es30::ffi::glSamplerParameteri(name, es20d::GL_TEXTURE_WRAP_S, self.desc.wrap.S);
-            es30::ffi::glSamplerParameteri(name, es20d::GL_TEXTURE_WRAP_T, conv::wrap_to_gl(t) as GLint);
-            es30::ffi::glSamplerParameteri(name, es20d::GL_TEXTURE_WRAP_R, conv::wrap_to_gl(r) as GLint);
+            es30::ffi::glSamplerParameteri(name, es20d::GL_TEXTURE_WRAP_S,
+                                           self.desc.wrap.S.clone() as _);
+            es30::ffi::glSamplerParameteri(name, es20d::GL_TEXTURE_WRAP_T,
+                                           self.desc.wrap.T.clone() as _);
+            es30::ffi::glSamplerParameteri(name, es30d::GL_TEXTURE_WRAP_R,
+                                           self.desc.wrap.R.clone() as _);
 
-            es30::ffi::glSamplerParameterf(name, gl::TEXTURE_LOD_BIAS, info.lod_bias.into());
-            es30::ffi::glSamplerParameterfv(name, gl::TEXTURE_BORDER_COLOR, &border[0]);
-            es30::ffi::glSamplerParameterf(name, gl::TEXTURE_MIN_LOD, info.lod_range.start.into());
-            es30::ffi::glSamplerParameterf(name, gl::TEXTURE_MAX_LOD, info.lod_range.end.into());
-            es30::ffi::glSamplerParameteri(name, gl::TEXTURE_COMPARE_MODE, gl::COMPARE_REF_TO_TEXTURE as GLint);
-            es30::ffi::glSamplerParameteri(name, gl::TEXTURE_COMPARE_FUNC, state::map_comparison(cmp) as GLint);
+            //TODO: set lod bias and board color in es?
+           // es30::ffi::glSamplerParameterf(name, es32d::GL_TEXTURE_LOD_BIAS,
+           //                                self.desc.lod_bias);
+           // es30::ffi::glSamplerParameterfv(name, es32d::GL_TEXTURE_BORDER_COLOR,
+           //                                 &border[0]);
+
+            es30::ffi::glSamplerParameterf(name, es30d::GL_TEXTURE_MIN_LOD,
+                                           self.desc.lod.start as _);
+            es30::ffi::glSamplerParameterf(name, es30d::GL_TEXTURE_MAX_LOD,
+                                           self.desc.lod.end as _);
+
+            es30::ffi::glSamplerParameteri(name, es30d::GL_TEXTURE_COMPARE_MODE,
+                                           self.desc.comparison.com_mod.clone() as _);
+            es30::ffi::glSamplerParameteri(name, es30d::GL_TEXTURE_COMPARE_FUNC,
+                                           self.desc.comparison.depth_func.clone() as _);
         }
     }
 }
