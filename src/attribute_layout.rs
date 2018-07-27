@@ -17,6 +17,7 @@ struct AttributeLayout {
     data_type: GLenum ,
     offset: GLintptr ,
     stride: GLsizei ,
+    // TODO: if needed ?
     divisor: GLuint ,
 }
 
