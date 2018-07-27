@@ -117,8 +117,8 @@ impl Buffer {
 
     pub fn new_with_data<T>(name: String, desc: &BufferDesc, data: &[T]) -> Buffer {
         let raw = es20::wrapper::gen_buffers(1)[0];
-        let target = desc.target.transfer();
-        let usage = desc.usage.transfer();
+        let target = desc.target as u32;
+        let usage = desc.usage as u32;
 
         let real_size =  data.len() as usize * mem::size_of::<T>();
         if real_size != desc.size as usize {
@@ -152,7 +152,7 @@ impl Buffer {
             real_size = &self.desc.size - offset;
         }
 
-        let target = self.desc.target.transfer();
+        let target = self.desc.target as u32;
         self.bind();
         es20::wrapper::buffer_sub_data(target,
                                        offset as _,
@@ -163,12 +163,12 @@ impl Buffer {
     }
 
     fn bind(&self){
-        let target = self.desc.target.transfer();
+        let target = self.desc.target as u32;
         es20::wrapper::bind_buffer(target, self.raw.unwrap());
     }
 
     fn unbind(&self){
-        let target = self.desc.target.transfer();
+        let target = self.desc.target as u32;
         es20::wrapper::bind_buffer(target, 0);
     }
 }
