@@ -1,16 +1,17 @@
 
+#[derive(Debug)]
 struct ShaderProgram {
     label: String,
     transform_feedback_varying_names: [String],
 }
 
 impl ShaderProgram {
-    fn get_label(&mut self) -> String {
-        *self.label
+    fn get_label(&mut self) -> &String {
+        &(self.label)
     }
 
-    fn set_label(&mut self, label: String) -> &mut Self {
-        *self.label = label;
+    fn set_label(&mut self, label: &String) -> &mut Self {
+        self.label = label.clone();
         self
     }
 
