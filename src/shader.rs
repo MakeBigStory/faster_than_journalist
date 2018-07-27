@@ -1,3 +1,4 @@
+#[derive(Debug)]
 enum ShaderType {
     Vertex,
     Fragment,
@@ -6,6 +7,7 @@ enum ShaderType {
     TessellationEvaluation,
 }
 
+#[derive(Debug)]
 enum ShaderLanguageVersion {
     Version100,
     Version300,
@@ -39,9 +41,9 @@ struct Shader {
 //        }
 //    }
 
-    /// Compiles a shader.
-    ///
-    /// Returns a shader or a message with the error.
+ //   /// Compiles a shader.
+ //   ///
+ //   /// Returns a shader or a message with the error.
 //    pub fn compile(mut self, shader_type: GLenum, source: &str) -> Result<GLuint, String>  {
 //        unsafe {
 //                    let shader = gl::CreateShader(shader_type);
@@ -85,9 +87,9 @@ struct Shader {
 //                }
 //    }
 
-    /// Finds attribute location from a program.
-    ///
-    /// Returns `Err` if there is no attribute with such name.
+ //   /// Finds attribute location from a program.
+ //   ///
+ //   /// Returns `Err` if there is no attribute with such name.
 //    pub fn attribute_location(program: GLuint, name: &str) -> Result<GLuint, String> {
 //        unsafe {
 //            let c_name = match CString::new(name) {
@@ -104,9 +106,9 @@ struct Shader {
 //        }
 //    }
 
-    /// Finds uniform location from a program.
-    ///
-    /// Returns `Err` if there is no uniform with such name.
+  //  /// Finds uniform location from a program.
+  //  ///
+  //  /// Returns `Err` if there is no uniform with such name.
 //    pub fn uniform_location(program: GLuint, name: &str) -> Result<GLuint, String> {
 //        unsafe {
 //            let c_name = match CString::new(name) {

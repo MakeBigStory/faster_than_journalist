@@ -79,32 +79,41 @@ impl TransferEnum for BufferUsage {
 
 #[derive(Debug, Clone)]
 pub struct BufferDesc {
+    pub label: String,
     target: BufferType,
     usage: BufferUsage,
     size: u32,
 }
 
 impl BufferDesc {
-    fn new(target: BufferType, usage: BufferUsage, size : u32)
+    fn new(label:String, target: BufferType, usage: BufferUsage, size : u32)
            -> BufferDesc {
         BufferDesc {
+            label,
             target,
             usage,
             size,
         }
     }
+
+    fn set_lable(&mut self, label: String) {
+        self.label = label;
+    }
+
+    fn get_lable(&self) -> &String {
+        &self.label
+    }
 }
 
 #[derive(Clone, Debug)]
 pub struct Buffer {
-    pub label: String,
     desc: BufferDesc,
     raw: Option<u32>,
 }
 
 impl Buffer {
     //if allocate a buffer without size, we will get size when write data automatically
-    pub fn new(name: String, desc: &BufferDesc) -> Self {
+    pub fn new(desc: &BufferDesc) -> Self {
         let raw = es20::wrapper::gen_buffers(1)[0];
 
         let target = desc.target.clone() as es20d::GLenum;
@@ -118,7 +127,6 @@ impl Buffer {
         es20::wrapper::bind_buffer(target, 0);
 
         Buffer {
-            label: name,
             desc: desc.clone(),
             raw: Some(raw)
         }
@@ -142,7 +150,6 @@ impl Buffer {
         es20::wrapper::bind_buffer(target, 0);
 
         Buffer {
-            label: name,
             desc: desc.clone(),
             raw: Some(raw),
         }

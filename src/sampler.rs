@@ -119,6 +119,7 @@ impl SamplerComparison{
 
 #[derive(Debug, Clone)]
 pub struct SamplerDesc {
+    pub label: String,
     pub lod: Range<u32>,
     pub lod_bias: f32,
     pub wrap: Wrap,
@@ -130,9 +131,10 @@ pub struct SamplerDesc {
 }
 
 impl SamplerDesc {
-    pub fn new()-> SamplerDesc {
+    pub fn new(label: String)-> SamplerDesc {
         let lod_range = Range{start:0, end: 1};
         SamplerDesc {
+            label,
             lod: lod_range,
             lod_bias: 0f32,
             wrap: Wrap::new(),
@@ -144,9 +146,10 @@ impl SamplerDesc {
         }
     }
 
-    pub fn new_with(lab:String, lod_range:Range<u32>, wrap:Wrap,
+    pub fn new_with(label:String, lod_range:Range<u32>, wrap:Wrap,
     filter: Filter) -> SamplerDesc {
         SamplerDesc {
+            label,
             lod: lod_range,
             lod_bias: 0f32,
             wrap,
@@ -156,6 +159,14 @@ impl SamplerDesc {
             board_color: Color::new(0.0,0.0,0.0,0.0),
             comparison: SamplerComparison::new(),
         }
+    }
+
+    fn set_lable(&mut self, label: String) {
+        self.label = label;
+    }
+
+    fn get_lable(&self) -> &String {
+        &self.label
     }
 
     pub fn set_wrap(&mut self, wrap: Wrap) {
@@ -193,7 +204,6 @@ impl SamplerDesc {
 
 #[derive(Clone,Debug)]
 pub struct Sampler {
-    label: String,
     desc: SamplerDesc,
     raw: Option<u32>,
 }
@@ -206,19 +216,17 @@ impl Sampler{
             es30::ffi::glGenSamplers(1, &mut name);
         }
         Sampler{
-            label,
-            desc: SamplerDesc::new(),
+            desc: SamplerDesc::new(label),
             raw: Some(name),
         }
     }
 
-    pub fn new_with(label:String, desc: &SamplerDesc) -> Sampler {
+    pub fn new_with(desc: &SamplerDesc) -> Sampler {
         let mut name = 0 as es20d::GLuint;
         unsafe {
             es30::ffi::glGenSamplers(1, &mut name);
         }
         Sampler{
-            label,
             desc: desc.clone(),
             raw: Some(name),
         }
@@ -263,4 +271,6 @@ impl Sampler{
                                            self.desc.comparison.depth_func.clone() as _);
         }
     }
+
+    //todo: maybe we need add some function for sampler operation directly. like set_lod_bias
 }

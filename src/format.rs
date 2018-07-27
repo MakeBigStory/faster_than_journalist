@@ -19,8 +19,8 @@ use std::ops::Range;
 
 /// the pixel data outside, only 6 symbolic values are accepted
 /// RED,RG,RGB,RGBA
-#[derive(Clone, Debug)]
-pub enum TextureFormat {
+//#[derive(Clone, Debug)]
+/*pub enum TextureFormat {
     //basic format
     DepthComponent,
     DepthStencil,
@@ -147,15 +147,23 @@ pub enum TextureFormat {
     CompressedRgbBptcSignedFloat,
     CompressedRgbBptcUnsignedFloat,
 }
+*/
+#[derive(Clone, Debug)]
+pub enum TextureFormat {
+    //basic format
+    DepthComponent = es20d::GL_DEPTH_COMPONENT as isize,
+    RGB = es20d::GL_RGB as isize,
+    RGBA = es20d::GL_RGBA as isize,
+}
 
 // out format, Like glTexImage2D func used
 #[derive(Clone, Debug)]
-pub enum Format{
-    Byte,
-    UnsignedByte,
-    Short,
-    UnsignedShort,
-    Int,
-    UnsignedInt,
-    Float,
+pub enum Format {
+    Byte = es20d::GL_BYTE as isize,
+    UnsignedByte = es20d::GL_UNSIGNED_BYTE as isize,
+    Short = es20d::GL_SHORT as isize,
+    UnsignedShort = es20d::GL_UNSIGNED_SHORT as isize,
+    Int = es20d::GL_INT as isize,
+    UnsignedInt = es20d::GL_UNSIGNED_INT as isize,
+    Float = es20d::GL_FLOAT as isize,
 }
