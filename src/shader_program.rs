@@ -1,3 +1,4 @@
+use shader::Shader;
 
 #[derive(Debug)]
 struct ShaderProgram {
