@@ -77,11 +77,11 @@ impl BufferDesc {
         }
     }
 
-    fn set_lable(&mut self, label: String) {
+    fn set_label(&mut self, label: String) {
         self.label = label;
     }
 
-    fn get_lable(&self) -> &String {
+    fn get_label(&self) -> &String {
         &self.label
     }
 }
