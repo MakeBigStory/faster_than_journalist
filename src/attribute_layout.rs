@@ -17,6 +17,7 @@ struct AttributeLayout {
     data_type: GLenum ,
     offset: GLintptr ,
     stride: GLsizei ,
+    // TODO: if needed ?
     divisor: GLuint ,
 }
 
@@ -39,32 +40,32 @@ impl AttributeLayout {
 }
 
 impl AttributeLayout {
-    pub fn set_location(mut self, location: GLuint) -> Self {
-        self.location = location,
-        self,
+    pub fn set_location(&mut self, location: GLuint) -> &mut Self {
+        *self.location = location;
+        self
     }
 
-    pub  fn set_size(mut self, size: GLint) -> Self {
-        self.size = size,
-        self,
+    pub  fn set_size(&mut self, size: GLint) -> &mut Self {
+        *self.size = size;
+        self
     }
 
-    pub fn set_data_type(mut self, data_type: GLenum) -> Self {
-        self.data_type = data_type,
-        self,
+    pub fn set_data_type(&mut self, data_type: GLenum) -> &mut Self {
+        *self.data_type = data_type;
+        self
     }
 
-    pub fn set_offset(mut self, offset: GLintptr) -> Self {
-        self.offset = offset,
-        self,
+    pub fn set_offset(&mut self, offset: GLintptr) -> &mut Self {
+        *self.offset = offset;
+        self
     }
-    pub fn set_stride(mut self, stride: GLsizei) -> Self {
-        self.stride = stride,
-        self,
+    pub fn set_stride(&mut self, stride: GLsizei) -> &mut Self {
+        *self.stride = stride;
+        self
     }
 
-    pub fn set_divisor(mut self, divisor: GLuint) -> Self {
-        self.divisor = divisor,
-        self,
+    pub fn set_divisor(&mut self, divisor: GLuint) -> &mut Self {
+        *self.divisor = divisor;
+        self
     }
 }
