@@ -37,16 +37,25 @@ pub enum BufferType {
 
 #[derive(Debug, Clone)]
 pub enum BufferUsage {
+    /// Set once by the application and used infrequently for drawing.
     StreamDraw = es20d::GL_STREAM_DRAW as isize,
+    /// Set once as output from an OpenGL command and used infequently for drawing.
     StreamRead = es30d::GL_STREAM_READ as isize,
+    /// Set once as output from an OpenGL command and used infrequently for drawing or copying to other buffers.
     StreamCopy = es30d::GL_STREAM_COPY as isize,
 
+    /// Set once by the application and used frequently for drawing. A good default choice if you are not sure.
     StaticDraw = es20d::GL_STATIC_DRAW as isize,
+    /// Set once as output from an OpenGL command and queried many times by the application.
     StaticRead = es30d::GL_STATIC_READ as isize,
+    /// Set once as output from an OpenGL command and used frequently for drawing or copying to other buffers.
     StaticCopy = es30d::GL_STATIC_COPY as isize,
 
+    /// Updated frequently by the application and used frequently for drawing or copying to other images.
     DynamicDraw = es20d::GL_DYNAMIC_DRAW as isize,
+    /// Updated frequently as output from OpenGL command and queried many times from the application.
     DynamicRead = es30d::GL_DYNAMIC_READ as isize,
+    /// Updated frequently as output from OpenGL command and used frequently for drawing or copying to other images.
     DynamicCopy = es30d::GL_DYNAMIC_COPY as isize,
 }
 
