@@ -36,5 +36,8 @@ trait ES30 {}
 impl Device {
     fn query_features() {}
     fn query_feature() {}
+
+    pub fn flush() {}
+    pub fn finish() {}
 }
 */
