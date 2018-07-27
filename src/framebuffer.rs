@@ -1,5 +1,5 @@
 
-/*
+
 use gles::es20::data_struct as es20d;
 use gles::es30::data_struct as es30d;
 use gles::es31::data_struct as es31d;
@@ -26,7 +26,7 @@ enum AttachmentType{
 }
 
 
-enum Status {
+enum FrameBufferStatus {
     /** The framebuffer is complete */
     Complete = GL_FRAMEBUFFER_COMPLETE,
 
@@ -198,4 +198,3 @@ impl Drop for FrameBuffer {
         }
     }
 }
-*/

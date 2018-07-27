@@ -181,7 +181,6 @@ pub struct Texture {
 
     current_out_pixel_type: Format,
     current_out_pixel_format: TextureFormat,
-    use_mip_map: bool,
 }
 
 
@@ -214,7 +213,6 @@ impl Texture {
 
             current_out_pixel_format: TextureFormat::RGBA,
             current_out_pixel_type: Format::UnsignedByte,
-            use_mip_map : false,
         }
     }
 
@@ -267,7 +265,6 @@ impl Texture {
 
             current_out_pixel_format: TextureFormat::RGBA,
             current_out_pixel_type: Format::UnsignedByte,
-            use_mip_map : false,
         }
     }
 
@@ -315,11 +312,10 @@ impl Texture {
         //TODO: Sampler Object Property
     }
     pub fn set_image<T>(&mut self, pixel_format: TextureFormat,
-                     data: &[T], pixel_type: Format, use_mip_map: bool) {
+                     data: &[T], pixel_type: Format) {
 
         self.current_out_pixel_type = pixel_type;
         self.current_out_pixel_format = pixel_format;
-        self.use_mip_map = use_mip_map;
 
         self.bind();
         es20::wrapper::tex_image_2d(self.desc.texture_type as _,
@@ -333,7 +329,7 @@ impl Texture {
                                     data,
         );
 
-        if use_mip_map {
+        if self.desc.use_mip_map {
             es20::wrapper::generate_mipmap(self.desc.texture_type as _);
         }
         self.unbind();
@@ -353,7 +349,7 @@ impl Texture {
                                     data,
         );
 
-        if self.use_mip_map {
+        if self.desc.use_mip_map {
             es20::wrapper::generate_mipmap(self.desc.texture_type as _);
         }
         self.unbind();
