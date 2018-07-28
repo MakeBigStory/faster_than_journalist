@@ -166,36 +166,43 @@ impl<'a> FrameBuffer<'a> {
     }
 
     pub fn detach(&mut self, label: String) {
-        for (i, attach) in self.attachments.iter().enumerate() {
-            if attach.0.label == label {
-                let attach_usage = attach.1;
-                match attach.0.attachment_type {
-                    AttachmentType::TextureAttachment(texture) => {
-                        texture.bind();
-                        framebuffer_texture_2d(
-                            self.usage as _,
-                            attach_usage,
-                            texture.desc.texture_type as _,
-                            0,
-                            0,
-                        );
-                        texture.unbind();
+        let mut index:i32 = -1;
+        {
+            for (i, attach) in self.attachments.iter().enumerate() {
+                if attach.0.label == label {
+                    let attach_usage = attach.1;
+                    match attach.0.attachment_type {
+                        AttachmentType::TextureAttachment(texture) => {
+                            texture.bind();
+                            framebuffer_texture_2d(
+                                self.usage as _,
+                                attach_usage,
+                                texture.desc.texture_type as _,
+                                0,
+                                0,
+                            );
+                            texture.unbind();
+                        }
+                        AttachmentType::RenderBufferAttachment(renderBuffer) => {
+                            renderBuffer.bind();
+                            framebuffer_renderbuffer(self.usage as _,
+                                                     attach_usage,
+                                                     GL_RENDERBUFFER,
+                                                     0);
+                            renderBuffer.unbind();
+                        }
                     }
-                    AttachmentType::RenderBufferAttachment(renderBuffer) => {
-                        renderBuffer.bind();
-                        framebuffer_renderbuffer(self.usage as _,
-                                                 attach_usage,
-                                                 GL_RENDERBUFFER,
-                                                 0);
-                        renderBuffer.unbind();
-                    }
-                }
 
-                //self.attachments.remove(i);
-                break;
-            } else {
-                continue;
+                    index = i as i32;
+                    //self.attachments.remove(i);
+                    break;
+                } else {
+                    continue;
+                }
             }
+        }
+        if index != -1 {
+            self.attachments.remove(index as usize);
         }
     }
 
