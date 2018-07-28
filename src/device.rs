@@ -1,4 +1,5 @@
-use gles::es20;
+use std::result::Result::Ok;
+use gles::es20::wrapper::{flush, finish};
 
 enum PixelStorage {}
 
@@ -16,12 +17,12 @@ impl Device {
     }
 
     pub fn flush() -> Result<u32, &str> {
-        es20::wrapper::
-
+        flush();
         Ok(0)
     }
 
     pub fn finish() -> Result<u32, &str> {
+        finish();
         Ok(0)
     }
 }

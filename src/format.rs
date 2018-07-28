@@ -218,7 +218,7 @@ pub enum StencilOp {
     IncrWrap = es20d::GL_INCR_WRAP as isize,
     Decr = es20d::GL_DECR as isize,
     DecrWrap = es20d::GL_DECR_WRAP as isize,
-    Inver = es20d::GL_INVERT as isizet,
+    Inver = es20d::GL_INVERT as isize,
 }
 
 #[derive(Copy, Clone, Debug)]

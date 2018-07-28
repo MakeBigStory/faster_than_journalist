@@ -8,7 +8,7 @@ use super::render_state::RenderState;
 struct RenderPipeline<'a> {
     program: &'a mut ShaderProgram,
     framebuffer: &'a mut FrameBuffer,
-    device: &'a mut device,
+    device: &'a mut Device,
     render_state: &'a mut RenderState
 }
 

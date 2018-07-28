@@ -419,50 +419,40 @@ impl Texture {
         }
     }
 
-    #[inline(always)]
-    pub fn id(&self) -> GLuint {
-        self.id
-    }
-    #[inline(always)]
-    pub fn width(&self) -> usize {
-        self.desc.size.width as usize
-    }
-    #[inline(always)]
-    pub fn height(&self) -> usize {
-        self.desc.size.height as usize
-    }
-
-    #[inline(always)]
-    pub fn format(&self) -> DataFormat {
-        self.format
-    }
-    #[inline(always)]
-    pub fn filter(&self) -> FilterMode {
-        self.filter
-    }
-    #[inline(always)]
-    pub fn wrap(&self) -> Wrap {
-        self.wrap
-    }
-    #[inline(always)]
-    pub fn mipmap(&self) -> bool {
-        self.mipmap
-    }
-}
-
-impl Drop for GLTexture {
-    #[inline]
-    fn drop(&mut self) {
-        if self.id != 0 {
-            unsafe {
-                gl::DeleteTextures(1, &self.id);
-            }
-        }
-    }
+//    #[inline(always)]
+//    pub fn id(&self) -> GLuint {
+//        self.id
+//    }
+//    #[inline(always)]
+//    pub fn width(&self) -> usize {
+//        self.desc.size.width as usize
+//    }
+//    #[inline(always)]
+//    pub fn height(&self) -> usize {
+//        self.desc.size.height as usize
+//    }
+//
+//    #[inline(always)]
+//    pub fn format(&self) -> DataFormat {
+//        self.format
+//    }
+//    #[inline(always)]
+//    pub fn filter(&self) -> FilterMode {
+//        self.filter
+//    }
+//    #[inline(always)]
+//    pub fn wrap(&self) -> Wrap {
+//        self.wrap
+//    }
+//    #[inline(always)]
+//    pub fn mipmap(&self) -> bool {
+//        self.mipmap
+//    }
 }
 
 impl Drop for Texture {
     fn drop(&mut self) {
-        es20::wrapper::delete_textures([self.raw]);
+        es20::wrapper::delete_textures([self.id]);
+        self.id = 0;
     }
 }

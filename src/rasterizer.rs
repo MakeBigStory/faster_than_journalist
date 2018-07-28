@@ -27,7 +27,7 @@ pub struct DepthTest {
 }
 
 impl DepthTest {
-    fn new() -> DepthTest{
+    pub fn new() -> DepthTest{
         DepthTest{
             on: true,
             depth_mask: true,
@@ -52,7 +52,7 @@ pub struct StencilTest{
 }
 
 impl StencilTest{
-    fn new() -> StencilTest{
+    pub fn new() -> StencilTest{
         StencilTest{
             on: false,
             stencil_fail: StencilOp::Keep,
@@ -60,7 +60,7 @@ impl StencilTest{
             pass: StencilOp::Keep,
             func: Comparison::Less,
             ref_value: 1,
-            mask: 0xffffffff;
+            mask: 0xffffffff,
         }
     }
 }
@@ -86,7 +86,7 @@ pub struct Blend {
 }
 
 impl Blend {
-    fn new() -> Blend {
+    pub fn new() -> Blend {
         Blend {
             on: false,
             blend_mod: BlendMod::Add,
@@ -110,7 +110,7 @@ pub struct Cull{
 }
 
 impl Cull {
-    fn new() -> Cull{
+    pub fn new() -> Cull{
         Cull{
             on: false,
             front_face_mode: FrontFaceMode::CCW,
@@ -119,7 +119,42 @@ impl Cull {
     }
 }
 
+//todo: alpha test...
+//todo: scissor test ...
+//todo: polygon mod...
+
 #[derive(Clone, Debug)]
-pub struct Rasterizer{
-    
+pub struct ColorMask {
+    pub r: bool,
+    pub g: bool,
+    pub b: bool,
+    pub a: bool,
+}
+
+impl ColorMask {
+    pub fn new() -> ColorMask {
+        ColorMask {
+            r: true,
+            g: true,
+            b: true,
+            a: true,
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct PolygonOffset{
+    pub on: bool,
+    pub factor: f32,
+    pub unit: f32,
+}
+
+impl PolygonOffset{
+    pub fn new() -> PolygonOffset {
+        PolygonOffset{
+            on:false,
+            factor: 0.0,
+            unit:0.0,
+        }
+    }
 }
