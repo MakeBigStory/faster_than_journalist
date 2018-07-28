@@ -80,7 +80,7 @@ pub enum FrameBufferUsage {
 }
 
 #[derive(Clone, Debug)]
-struct FrameBuffer<'a> {
+pub(crate) struct FrameBuffer<'a> {
     pub label: String,
     pub status: FrameBufferStatus,
     pub id: u32,

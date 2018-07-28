@@ -16,6 +16,8 @@ mod texture;
 mod timer;
 mod version;
 use device::Device;
+mod render_pipeline;
+mod render_state;
 
 fn main() {
     println!("Hello, world!");
