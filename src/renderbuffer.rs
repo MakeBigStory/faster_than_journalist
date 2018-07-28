@@ -19,7 +19,7 @@ use format::*;
 pub struct RenderBuffer {
     pub label: String,
     pub format: TextureFormat,
-    pub raw: u32,
+    pub id: u32,
     pub width: u32,
     pub height: u32,
 }
@@ -30,7 +30,7 @@ impl RenderBuffer {
         RenderBuffer{
             label,
             format: TextureFormat::DepthComponent,
-            raw,
+            id: raw,
             width: 0,
             height: 0,
         }
@@ -43,7 +43,7 @@ impl RenderBuffer {
     }
 
     pub fn bind(&self) {
-        es20::wrapper::bind_renderbuffer(es20d::GL_RENDERBUFFER, self.raw);
+        es20::wrapper::bind_renderbuffer(es20d::GL_RENDERBUFFER, self.id);
     }
 
     pub fn unbind(&self) {
@@ -53,7 +53,7 @@ impl RenderBuffer {
 
 impl Drop for RenderBuffer {
     fn drop(&mut self) {
-        es20::wrapper::delete_renderbuffers(&[self.raw]);
+        es20::wrapper::delete_renderbuffers(&[self.id]);
     }
 }
 
