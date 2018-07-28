@@ -1,6 +1,6 @@
 // todo: 可能不需要，目前大家都用float
 
-// todo: format mod: 定义了shader常用的格式
+// todo: format mod: 定义了shader常用的格式，Long在es中是不存在的，这里用Format
 #[derive(Debug)]
 enum AttributeKind {
     Integer,
