@@ -457,6 +457,8 @@ impl Drop for GLTexture {
             unsafe {
                 gl::DeleteTextures(1, &self.id);
             }
+
+            self.id = 0;
         }
     }
 }
