@@ -1,10 +1,12 @@
 use shader::Shader;
+use gles::es20::data_struct::GLuint;
+use gles::es20::wrapper::delete_program;
 
 #[derive(Debug)]
 pub struct ShaderProgram {
     pub label: String,
 //    transform_feedback_varying_names: [String],
-    program_id: i32,
+    program_id: GLuint,
     enable_program_pipeline: bool,
     shader_count: u8,
     enable_merge_vertex_buffer_array: bool,
@@ -161,10 +163,8 @@ impl ShaderProgram {
 impl Drop for ShaderProgram {
     #[inline]
     fn drop(&mut self) {
-//        if self.id != 0 {
-//            unsafe {
-//                gl::DeleteProgram(self.id);
-//            }
-//        }
+        if self.initialized {
+            delete_program(self.program_id)
+        }
     }
 }

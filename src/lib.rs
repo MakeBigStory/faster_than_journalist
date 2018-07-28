@@ -1,3 +1,5 @@
+extern crate opengles_rs as gles;
+
 pub use self::shader_program::*;
 pub use self::shader::*;
 
