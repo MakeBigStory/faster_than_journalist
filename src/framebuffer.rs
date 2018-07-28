@@ -19,7 +19,7 @@ pub enum AttachmentUsage {
     DepthStencil,
 }
 
-#[derive(Copy, Debug)]
+#[derive(Copy, Clone, Debug)]
 pub enum AttachmentType<'a> {
     TextureAttachment(&'a Texture),
     RenderBufferAttachment(&'a RenderBuffer),
@@ -65,7 +65,7 @@ impl<'a> Attachment<'a> {
     }
 }
 
-#[derive(Copy, Debug)]
+#[derive(Copy, Clone, Debug)]
 pub enum FrameBufferUsage {
     //todo:
     Read,
