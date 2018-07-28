@@ -165,3 +165,19 @@ pub enum Format {
     UnsignedInt = es20d::GL_UNSIGNED_INT as isize,
     Float = es20d::GL_FLOAT as isize,
 }
+
+#[derive(Copy, Clone, Debug)]
+pub enum BlendMode {
+
+}
+
+#[derive(Copy, Clone, Debug)]
+pub enum DepthMode {
+
+
+}
+
+#[derive(Copy, Clone, Debug)]
+pub enum StencilMode {
+
+}
