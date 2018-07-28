@@ -8,23 +8,12 @@ pub mod shader_program;
 
 static SIMPLE_VERTEX_DATA: [f32; 16] = [
     //   position     uv
-    1f32,
-    1f32,
-    1f32,
-    1f32,
-    -1f32,
-    1f32,
-    0f32,
-    1f32,
-    1f32,
-    -1f32,
-    1f32,
-    0f32,
-    -1f32,
-    -1f32,
-    0f32,
-    0f32,
+    1f32,  1f32,   1f32, 1f32,
+    -1f32,  1f32,   0f32, 1f32,
+    1f32, -1f32,   1f32, 0f32,
+    -1f32, -1f32,   0f32, 0f32
 ];
+
 
 static SIMPLE_VERTEX: &'static str = "
     uniform vec2 size;
@@ -55,6 +44,7 @@ static SIMPLE_FRAGMENT: &'static str = "
 #[no_mangle]
 pub extern "C" fn init_triangle_program() {
     let program = ShaderProgram::create_render_program(SIMPLE_VERTEX, SIMPLE_FRAGMENT);
+    program.link();
 }
 
 //#[no_mangle]

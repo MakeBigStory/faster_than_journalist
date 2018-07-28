@@ -1,11 +1,11 @@
-use shader::Shader;
 use gles::es20::data_struct::GLuint;
 use gles::es20::wrapper::delete_program;
+use shader::Shader;
 
 #[derive(Debug)]
 pub struct ShaderProgram {
     pub label: String,
-//    transform_feedback_varying_names: [String],
+    //    transform_feedback_varying_names: [String],
     program_id: GLuint,
     enable_program_pipeline: bool,
     shader_count: u8,
@@ -14,7 +14,6 @@ pub struct ShaderProgram {
 }
 
 impl ShaderProgram {
-
     #[inline]
     pub fn create_render_program(vertex: &str, fragment: &str) -> Self {
         let mut program = ShaderProgram {
@@ -23,36 +22,33 @@ impl ShaderProgram {
             shader_count: 0,
             enable_merge_vertex_buffer_array: false,
             label: String::from(""),
-//            transform_feedback_varying_names: ,
-            initialized: false
+            //            transform_feedback_varying_names: ,
+            initialized: false,
         };
         program
     }
 
     #[inline]
-    pub fn create_compute_program() {
-
-    }
-
+    pub fn create_compute_program() {}
 
     // todo: remain to discussion
-//    pub fn new(&mut self, shader_count: u8) -> Self {
-//        Program {
-//            program_id: 0,
-//            enable_program_pipeline: false,
-//            shader_count: 0,
-//            enable_merge_vertex_buffer_array: false,
-//            label: (""),
-//            transform_feedback_varying_names: (),
-//        }
-//    }
+    //    pub fn new(&mut self, shader_count: u8) -> Self {
+    //        Program {
+    //            program_id: 0,
+    //            enable_program_pipeline: false,
+    //            shader_count: 0,
+    //            enable_merge_vertex_buffer_array: false,
+    //            label: (""),
+    //            transform_feedback_varying_names: (),
+    //        }
+    //    }
 
     pub fn initialize(&self) -> bool {
         self.initialized
     }
 
     pub fn attach_shader(&mut self, shader: &Shader) {
-//        unsafe { gl.AttachShader(name, shader) };
+        //        unsafe { gl.AttachShader(name, shader) };
     }
 
     pub fn attach_shaders(mut self, shaders: &[Shader]) {
@@ -61,12 +57,12 @@ impl ShaderProgram {
         }
     }
 
-//    // todo: move to `new()`
-//    pub fn create(mut self) -> bool {
-////        gl.CreateProgram()
-//    }
+    //    // todo: move to `new()`
+    //    pub fn create(mut self) -> bool {
+    ////        gl.CreateProgram()
+    //    }
 
-    pub  fn link(mut self) -> bool {
+    pub fn link(mut self) -> bool {
         true
     }
 
@@ -84,33 +80,33 @@ impl ShaderProgram {
 
     #[inline]
     pub fn get_program_log() -> String {
-//        let mut status = 0;
-//
-//        unsafe { gl::GetProgramiv(program, gl::LINK_STATUS, &mut status) };
-//
-//        if status != (gl::TRUE as GLint) {
-//            let mut len: GLint = 0;
-//            unsafe {
-//                gl::GetProgramiv(program, gl::INFO_LOG_LENGTH, &mut len);
-//            }
-//            let mut buf = Vec::with_capacity(len as usize);
-//            unsafe {
-//                buf.set_len(len as usize);
-//                gl::GetProgramInfoLog(
-//                    program,
-//                    len,
-//                    ptr::null_mut(),
-//                    buf.as_mut_ptr() as *mut GLchar,
-//                );
-//            }
-//            panic!(
-//                "{}",
-//                str::from_utf8(&buf)
-//                    .ok()
-//                    .expect("ProgramInfoLog not valid utf8")
-//            );
-//        }
-//        program
+        //        let mut status = 0;
+        //
+        //        unsafe { gl::GetProgramiv(program, gl::LINK_STATUS, &mut status) };
+        //
+        //        if status != (gl::TRUE as GLint) {
+        //            let mut len: GLint = 0;
+        //            unsafe {
+        //                gl::GetProgramiv(program, gl::INFO_LOG_LENGTH, &mut len);
+        //            }
+        //            let mut buf = Vec::with_capacity(len as usize);
+        //            unsafe {
+        //                buf.set_len(len as usize);
+        //                gl::GetProgramInfoLog(
+        //                    program,
+        //                    len,
+        //                    ptr::null_mut(),
+        //                    buf.as_mut_ptr() as *mut GLchar,
+        //                );
+        //            }
+        //            panic!(
+        //                "{}",
+        //                str::from_utf8(&buf)
+        //                    .ok()
+        //                    .expect("ProgramInfoLog not valid utf8")
+        //            );
+        //        }
+        //        program
         String::from("")
     }
 
@@ -135,7 +131,6 @@ impl ShaderProgram {
     pub fn set_enable_merge_vertex_buffer_array() {}
     pub fn set_use_vertex_buffer_array() {}
 
-
     /// Allow retrieving program binary
     /// PROGRAM_BINARY_RETRIEVABLE_HINT
     fn set_retrievable_binary(mut self, enabled: bool) {
@@ -150,15 +145,14 @@ impl ShaderProgram {
         //    glProgramParameteriEXT(_id, GL_PROGRAM_SEPARABLE_EXT, enabled ? GL_TRUE : GL_FALSE);
     }
 
-//    fn get_attribute_location(&self, name: String) -> i32 {}
-//    fn get_uniform_location(&self, name: String) -> i32 {}
-//    fn get_uniform_block_index(&self, name: String) -> i32 {}
+    //    fn get_attribute_location(&self, name: String) -> i32 {}
+    //    fn get_uniform_location(&self, name: String) -> i32 {}
+    //    fn get_uniform_block_index(&self, name: String) -> i32 {}
 
-//    fn transform_feedback_varyings(&self, name: String) -> i32 {}
-//    fn set_transform_feedback_outputs(&self, name: String) -> i32 {}
-//    fn set_transform_feedback_mode(&self, mode: TransformFeedbackBufferMode) -> i32 {}
+    //    fn transform_feedback_varyings(&self, name: String) -> i32 {}
+    //    fn set_transform_feedback_outputs(&self, name: String) -> i32 {}
+    //    fn set_transform_feedback_mode(&self, mode: TransformFeedbackBufferMode) -> i32 {}
 }
-
 
 impl Drop for ShaderProgram {
     #[inline]
