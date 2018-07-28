@@ -5,7 +5,7 @@ use super::device::Device;
 use super::render_state::RenderState;
 
 #[derive(Debug)]
-struct RenderPipeline<'a, 'b> {
+struct RenderPipeline<'a, 'b: 'a> {
     program: &'a mut ShaderProgram,
     framebuffer: &'a mut FrameBuffer<'b>,
     device: &'a mut Device,
