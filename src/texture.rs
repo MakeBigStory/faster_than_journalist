@@ -465,6 +465,7 @@ impl Drop for GLTexture {
 
 impl Drop for Texture {
     fn drop(&mut self) {
-        es20::wrapper::delete_textures([self.raw]);
+        es20::wrapper::delete_textures([self.id]);
+        self.id = 0;
     }
 }
