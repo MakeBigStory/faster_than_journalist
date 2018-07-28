@@ -1,13 +1,12 @@
-
 use gles::es20::data_struct as es20d;
 use gles::es30::data_struct as es30d;
 use gles::es31::data_struct as es31d;
 use gles::es32::data_struct as es32d;
 
-use gles::es20;
-use gles::es30;
-use gles::es31;
-use gles::es32;
+use self::es20d::*;
+use self::es30d::*;
+
+use gles::es20::{data_struct, wrapper};
 
 use std::ptr;
 use std::fmt;
@@ -56,7 +55,7 @@ pub enum FrameBufferStatus {
 
 #[derive(Clone, Debug)]
 pub struct Attachment<'a>{
-    pub lable: String,
+//    pub label: String,
     pub usage: AttachmentUsage,
     pub attachment_type: AttachmentType<'a>
 }
@@ -64,7 +63,7 @@ pub struct Attachment<'a>{
 impl Attachment{
     fn new(label:String, usage: AttachmentUsage, attachment_type: AttachmentType) -> Attachment {
         Attachment{
-            lable,
+//            label: lable,
             usage,
             attachment_type,
         }
@@ -92,7 +91,7 @@ pub(crate) struct FrameBuffer<'a> {
 impl FrameBuffer {
     #[inline(always)]
     pub fn new(label:String) -> Self {
-        let id = es20::wrapper::gen_framebuffers(1)[0];
+        let id = es20d::wrapper::gen_framebuffers(1)[0];
         FrameBuffer{
             label,
             status: FrameBufferStatus::IncompleteAttachment,
@@ -112,11 +111,11 @@ impl FrameBuffer {
 
     #[inline]
     pub fn unbind(&self) {
-        es20::wrapper::bind_framebuffer(es20d::GL_FRAMEBUFFER, 0);
+        es20d::wrapper::bind_framebuffer(es20d::GL_FRAMEBUFFER, 0);
     }
 
     #[inline]
-    pub fn bind(&self) { es20::wrapper::bind_framebuffer(es20d::GL_FRAMEBUFFER, self.id);
+    pub fn bind(&self) { es20d::wrapper::bind_framebuffer(es20d::GL_FRAMEBUFFER, self.id);
     }
 
     /// todo: only 1 supported with es20
@@ -126,7 +125,7 @@ impl FrameBuffer {
 
     pub fn check_status(&self) -> FrameBufferStatus {
         //todo : 原来的有30或者31的，对不上号，改了。
-        match es20::wrapper::check_framebuffer_status(self.usage as _) {
+        match es20d::wrapper::check_framebuffer_status(self.usage as _) {
             es20d::GL_FRAMEBUFFER_COMPLETE => {
                 FrameBufferStatus::Complete
             }
@@ -154,13 +153,13 @@ impl FrameBuffer {
             match attach.attachment_type {
                 AttachmentType::TextureAttachment(texture) => {
                     texture.bind();
-                    es20::wrapper::framebuffer_texture_2d(self.usage, attach_usage,
+                    es20d::wrapper::framebuffer_texture_2d(self.usage, attach_usage,
                     texture.desc.texture_type as _,texture.id, texture.desc.level);
                     texture.unbind();
                 },
                 AttachmentType::RenderBufferAttachment(renderBuffer)=>{
                     renderBuffer.bind();
-                    es20::wrapper::framebuffer_renderbuffer(self.usage, attach_usage,
+                    es20d::wrapper::framebuffer_renderbuffer(self.usage, attach_usage,
                     es20d::GL_RENDERBUFFER, renderBuffer.id);
                     renderBuffer.unbind();
 
@@ -177,13 +176,13 @@ impl FrameBuffer {
                 match attach.0.attachment_type {
                     AttachmentType::TextureAttachment(texture) => {
                         texture.bind();
-                        es20::wrapper::framebuffer_texture_2d(self.usage, attach_usage,
+                        es20d::wrapper::framebuffer_texture_2d(self.usage, attach_usage,
                                                               texture.desc.texture_type as _,0, 0);
                         texture.unbind();
                     },
                     AttachmentType::RenderBufferAttachment(renderBuffer)=>{
                         renderBuffer.bind();
-                        es20::wrapper::framebuffer_renderbuffer(self.usage, attach_usage,
+                        es20d::wrapper::framebuffer_renderbuffer(self.usage, attach_usage,
                                                                 es20d::GL_RENDERBUFFER, 0);
                         renderBuffer.unbind();
 
@@ -203,11 +202,11 @@ impl FrameBuffer {
         let attach_usage = match attach.usage {
             AttachmentUsage::ColorAttach => {
                 let mut gl_color_attach:u32 = 0;
-                if num == 0 {
+                if self.num == 0 {
                     gl_color_attach = es20d::GL_COLOR_ATTACHMENT0;
                 }
                     else {
-                        gl_color_attach = es30d::GL_COLOR_ATTACHMENT1 + num - 1;
+                        gl_color_attach = es30d::GL_COLOR_ATTACHMENT1 + self.num - 1;
                     }
                 self.num = self.num + 1;
                 (gl_color_attach)
@@ -272,9 +271,7 @@ impl Drop for FrameBuffer {
     #[inline]
     fn drop(&mut self) {
         if self.id != 0 {
-            unsafe {
-                gl::DeleteFramebuffers(1, &self.id);
-            }
+            delete_framebuffers([self.id]);
         }
     }
 }
