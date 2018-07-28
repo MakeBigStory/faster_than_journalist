@@ -183,6 +183,7 @@ impl TextureDesc {
     }
 }
 
+#[derive(Debug)]
 pub struct Texture {
     pub desc: TextureDesc,
     pub id: u32,
@@ -391,7 +392,7 @@ impl Texture {
 
     pub fn generate_mipmap(&self) {
         self.bind();
-        if self.use_mip_map {
+        if self.desc.use_mip_map {
             es20::wrapper::generate_mipmap(self.desc.texture_type as _);
         }
         self.unbind();
