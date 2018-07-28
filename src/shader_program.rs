@@ -1,9 +1,7 @@
-//mod shader;
-//
-//use Shader;
+use shader::Shader;
 
 #[derive(Debug)]
-pub struct ShaderProgram {
+pub(crate) struct ShaderProgram {
     pub label: String,
     transform_feedback_varying_names: [String],
     program_id: i32,

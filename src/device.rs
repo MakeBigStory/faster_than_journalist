@@ -1,8 +1,30 @@
+use gles::es20;
+
 enum PixelStorage {}
 
 enum CompressedPixelStorage {}
 
-pub struct Device {}
+#[derive(Debug)]
+pub(crate) struct Device {}
+
+impl Device {
+//    fn query_features() {}
+//    fn query_feature() {}
+
+    pub fn prepare() -> Result<u32, &str> {
+        Ok(0)
+    }
+
+    pub fn flush() -> Result<u32, &str> {
+        es20::wrapper::
+
+        Ok(0)
+    }
+
+    pub fn finish() -> Result<u32, &str> {
+        Ok(0)
+    }
+}
 
 /*
 trait ES20 {
