@@ -1,23 +1,19 @@
+//mod shader;
+//
+//use Shader;
 
 #[derive(Debug)]
-struct ShaderProgram {
-    label: String,
+pub struct ShaderProgram {
+    pub label: String,
     transform_feedback_varying_names: [String],
     program_id: i32,
     enable_program_pipeline: bool,
     shader_count: u8,
     enable_merge_vertex_buffer_array: bool,
+    initialized: bool,
 }
 
 impl ShaderProgram {
-    fn get_label(&mut self) -> &String {
-        &(self.label)
-    }
-
-    fn set_label(&mut self, label: &String) -> &mut Self {
-        self.label = label.clone();
-    }
-
     // todo: refine
     pub fn create_render_program(){}
     pub fn create_compute_program(){}
