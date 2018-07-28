@@ -12,14 +12,14 @@ impl Device {
 //    fn query_features() {}
 //    fn query_feature() {}
 
-    pub fn prepare() {
+    pub fn prepare(&mut self) {
     }
 
-    pub fn flush() {
+    pub fn flush(&mut self) {
         flush();
     }
 
-    pub fn finish() {
+    pub fn finish(&mut self) {
         finish();
     }
 }
