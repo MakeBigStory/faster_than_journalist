@@ -415,7 +415,7 @@ impl Texture {
     #[inline]
     pub fn unbind(&self) {
         unsafe {
-            es20::ffi::glBindTexture(self.desc.texture_type as _, self.id);
+            es20::ffi::glBindTexture(self.desc.texture_type as _, 0);
         }
     }
 
