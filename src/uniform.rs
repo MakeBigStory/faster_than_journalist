@@ -1,3 +1,5 @@
+use super::texture::Texture;
+
 #[derive(Debug, Clone, Hash)]
 pub struct Uniform {
     kind: UniformKind,
@@ -118,7 +120,7 @@ impl Uniform {
     create_set_matrix_uniform_size!(set_mat4fv, UniformMatrix4fv, f32);
 
     #[inline]
-    pub fn set_sampler_2d(&self, texture: &GLTexture, index: usize) {
+    pub fn set_sampler_2d(&self, texture: &Texture, index: usize) {
         unsafe {
             gl::ActiveTexture(gl::TEXTURE0 + index as GLuint);
             gl::Uniform1i(self.location as GLint, index as GLint);

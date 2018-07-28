@@ -18,6 +18,7 @@ mod version;
 use device::Device;
 mod render_pipeline;
 mod render_state;
+mod uniform;
 
 fn main() {
     println!("Hello, world!");
