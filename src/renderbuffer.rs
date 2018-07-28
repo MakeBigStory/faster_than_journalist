@@ -38,7 +38,10 @@ impl RenderBuffer {
 
     pub fn set_storage(&mut self, format: TextureFormat, width: u32, height: u32) {
         self.bind();
-        es20::wrapper::renderbuffer_storage(es20d::GL_RENDERBUFFER,format as _ , width, height);
+        es20::wrapper::renderbuffer_storage(es20d::GL_RENDERBUFFER,
+                                            format as _ ,
+                                            width as i32,
+                                            height as i32);
         self.unbind();
     }
 

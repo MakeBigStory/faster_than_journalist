@@ -132,7 +132,7 @@ impl<'a> FrameBuffer<'a> {
         }
     }
 
-    pub fn attach(&mut self, attachments: &[Attachment]) {
+    pub fn attach(&mut self, attachments: &[Attachment<'a>]) {
         self.bind();
         for attach in attachments {
             let attach_usage = self.allocate_attachment_usage(attach);
@@ -142,18 +142,18 @@ impl<'a> FrameBuffer<'a> {
                 AttachmentType::TextureAttachment(texture) => {
                     texture.bind();
                     framebuffer_texture_2d(
-                        self.usage,
+                        self.usage as _,
                         attach_usage,
                         texture.desc.texture_type as _,
                         texture.id,
-                        texture.desc.level,
+                        texture.desc.level as _,
                     );
                     texture.unbind();
                 }
                 AttachmentType::RenderBufferAttachment(renderBuffer) => {
                     renderBuffer.bind();
                     framebuffer_renderbuffer(
-                        self.usage,
+                        self.usage as _,
                         attach_usage,
                         GL_RENDERBUFFER,
                         renderBuffer.id,
@@ -167,13 +167,13 @@ impl<'a> FrameBuffer<'a> {
 
     pub fn detach(&mut self, label: String) {
         for (i, attach) in self.attachments.iter().enumerate() {
-            if self.attachment.label == label {
+            if attach.0.label == label {
                 let attach_usage = attach.1;
                 match attach.0.attachment_type {
                     AttachmentType::TextureAttachment(texture) => {
                         texture.bind();
                         framebuffer_texture_2d(
-                            self.usage,
+                            self.usage as _,
                             attach_usage,
                             texture.desc.texture_type as _,
                             0,
@@ -183,7 +183,10 @@ impl<'a> FrameBuffer<'a> {
                     }
                     AttachmentType::RenderBufferAttachment(renderBuffer) => {
                         renderBuffer.bind();
-                        framebuffer_renderbuffer(self.usage, attach_usage, GL_RENDERBUFFER, 0);
+                        framebuffer_renderbuffer(self.usage as _,
+                                                 attach_usage,
+                                                 GL_RENDERBUFFER,
+                                                 0);
                         renderBuffer.unbind();
                     }
                 }
@@ -258,7 +261,7 @@ impl<'a> Drop for FrameBuffer<'a> {
     #[inline]
     fn drop(&mut self) {
         if self.id != 0 {
-            delete_framebuffers([self.id]);
+            delete_framebuffers(&[self.id]);
         }
     }
 }

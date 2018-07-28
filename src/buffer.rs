@@ -173,6 +173,12 @@ impl Buffer {
 
 impl Drop for Buffer {
     fn drop(&mut self) {
-        es20::wrapper::delete_buffers([self.raw]);
+        match self.raw {
+            Some(id) => {
+                es20::wrapper::delete_buffers(&[id]);
+                self.raw = None;
+            },
+            _ => {}
+        }
     }
 }

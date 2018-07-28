@@ -183,7 +183,7 @@ impl TextureDesc {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Texture {
     pub desc: TextureDesc,
     pub id: u32,
@@ -453,7 +453,7 @@ impl Texture {
 
 impl Drop for Texture {
     fn drop(&mut self) {
-        es20::wrapper::delete_textures([self.id]);
+        es20::wrapper::delete_textures(&[self.id]);
         self.id = 0;
     }
 }
