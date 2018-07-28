@@ -20,8 +20,7 @@ fn glenum_to_isize(value: es20d::GLenum) -> isize {
     value as isize
 }
 
-/// Texture sampler wrapping. Note that not every mode is available on all targets
-#[derive(Clone, Debug)]
+#[derive(Copy, Clone, Debug)]
 pub enum WrapMode {
     /// Repeat texture
     Repeat = es20d::GL_REPEAT as isize,
@@ -31,12 +30,12 @@ pub enum WrapMode {
     ClampToEdge = es20d::GL_CLAMP_TO_EDGE as isize,
     /// Clamp to border color. Coordinates out of range will be clamped to border color.
     ClampToBorder = es32d::GL_CLAMP_TO_BORDER as isize,
-    /// Mirror the texture once in negative coordinates and clamp to edge after that.
+    //// Mirror the texture once in negative coordinates and clamp to edge after that.
 //    MirrorClampToEdge,
 }
 
-/// Texture sampler filtering
-#[derive(Clone, Debug)]
+
+#[derive(Copy, Clone, Debug)]
 pub enum FilterMode {
     /// Nearest neighbor filtering.
     Nearest = es20d::GL_NEAREST as isize,
@@ -50,7 +49,7 @@ pub enum FilterMode {
     LinearMipmapLinear = es20d::GL_LINEAR_MIPMAP_LINEAR as isize,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum DepthFunc {
     LeQual = es20d::GL_LEQUAL as isize,
     GeQual = es20d::GL_GEQUAL as isize,
@@ -62,13 +61,14 @@ pub enum DepthFunc {
     Never = es20d::GL_NEVER as isize,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum ComparisonMod {
     None = es20d::GL_NONE as isize,
     CompareRefToTexture = es30d::GL_COMPARE_REF_TO_TEXTURE as isize,
 }
 
-#[derive(Debug, Clone)]
+
+#[derive(Clone, Debug)]
 pub struct Wrap {
     pub R: WrapMode,
     pub S: WrapMode,
@@ -85,7 +85,7 @@ impl Wrap {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Clone, Debug)]
 pub struct Filter {
     pub min: FilterMode,
     pub mag: FilterMode,
@@ -172,11 +172,11 @@ impl SamplerDesc {
         }
     }
 
-    fn set_lable(&mut self, label: String) {
+    fn set_label(&mut self, label: String) {
         self.label = label;
     }
 
-    fn get_lable(&self) -> &String {
+    fn get_label(&self) -> &String {
         &self.label
     }
 
@@ -245,7 +245,7 @@ impl Sampler {
     fn write_desc(&self) {
         let name = match self.raw {
             Some(data) => data,
-            None => panic!("Error: Sampler: write_desc , the raw is null"),
+            None => panic!("Error: Sampler: write_desc , the id is null"),
         };
 
         unsafe {

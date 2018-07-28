@@ -136,8 +136,8 @@ impl Buffer {
         }
     }
 
-    //CPU data unpack to GPU
-    pub fn write_buffer_data<T>(&self, offset: u32, size: u32, data :&[T])
+    //todo: CPU data unpack to GPU,高版本或许可以使用mapbufferRange来实现高速资源拷贝
+    pub fn write_sub_buffer_data<T>(&self, offset: u32, size: u32, data :&[T])
         -> Option<&Buffer> {
         if self.desc.size == 0 {
             eprintln!("Buffer::write_data: hasn't been allocate a GPUMemory {:?}", self);
@@ -168,5 +168,11 @@ impl Buffer {
     fn unbind(&self){
         let target = self.desc.target as u32;
         es20::wrapper::bind_buffer(target, 0);
+    }
+}
+
+impl Drop for Buffer {
+    fn drop(&mut self) {
+        es20::wrapper::delete_buffers([self.raw]);
     }
 }

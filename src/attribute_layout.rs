@@ -1,4 +1,6 @@
 // todo: 可能不需要，目前大家都用float
+
+// todo: format mod: 定义了shader常用的格式
 #[derive(Debug)]
 enum AttributeKind {
     Integer,
