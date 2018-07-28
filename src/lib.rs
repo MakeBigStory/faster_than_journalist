@@ -1,5 +1,9 @@
-mod shader_program;
-//use shader_program::ShaderProgram;
+pub use self::shader_program::*;
+pub use self::shader::*;
+
+pub mod shader_program;
+pub mod shader;
+
 
 
 static SIMPLE_VERTEX_DATA: [f32; 16] = [
@@ -39,8 +43,7 @@ static SIMPLE_FRAGMENT: &'static str = "
 
 #[no_mangle]
 pub extern fn init_triangle_program(){
-    let program = ShaderProgram::new();
-    program.compile_shader(SIMPLE_VERTEX, SIMPLE_FRAGMENT);
+    let program = ShaderProgram::create_render_program(SIMPLE_VERTEX, SIMPLE_FRAGMENT);
 }
 
 //#[no_mangle]

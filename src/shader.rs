@@ -16,8 +16,8 @@ enum ShaderLanguageVersion {
 }
 
 #[derive(Debug)]
-pub(crate) struct Shader {
-    label: String,
+pub struct Shader {
+    pub label: String,
     shader_type: ShaderType,
     source: String,
     enable_shader_reuse: bool,

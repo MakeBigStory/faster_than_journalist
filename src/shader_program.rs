@@ -1,9 +1,9 @@
 use shader::Shader;
 
 #[derive(Debug)]
-pub(crate) struct ShaderProgram {
+pub struct ShaderProgram {
     pub label: String,
-    transform_feedback_varying_names: [String],
+//    transform_feedback_varying_names: [String],
     program_id: i32,
     enable_program_pipeline: bool,
     shader_count: u8,
@@ -12,9 +12,26 @@ pub(crate) struct ShaderProgram {
 }
 
 impl ShaderProgram {
-    // todo: refine
-    pub fn create_render_program(){}
-    pub fn create_compute_program(){}
+
+    #[inline]
+    pub fn create_render_program(vertex: &str, fragment: &str) -> Self {
+        let mut program = ShaderProgram {
+            program_id: 0,
+            enable_program_pipeline: false,
+            shader_count: 0,
+            enable_merge_vertex_buffer_array: false,
+            label: String::from(""),
+//            transform_feedback_varying_names: ,
+            initialized: false
+        };
+        program
+    }
+
+    #[inline]
+    pub fn create_compute_program() {
+
+    }
+
 
     // todo: remain to discussion
 //    pub fn new(&mut self, shader_count: u8) -> Self {
@@ -28,37 +45,39 @@ impl ShaderProgram {
 //        }
 //    }
 
-    pub fn initialize() -> bool {
-        return true;
+    pub fn initialize(&self) -> bool {
+        self.initialized
     }
 
-    fn attach_shader(mut self, shader: Shader) {
-        unsafe { gl.AttachShader(name, shader) };
+    pub fn attach_shader(&mut self, shader: &Shader) {
+//        unsafe { gl.AttachShader(name, shader) };
     }
 
-    fn attach_shaders(mut self, shaders: &[Shader]) {
+    pub fn attach_shaders(mut self, shaders: &[Shader]) {
         for shader in shaders {
-            attach_shader(shader);
+            self.attach_shader(shader);
         }
     }
 
-    // todo: move to `new()`
-    fn create(mut self) -> bool {
-        gl.CreateProgram()
-    }
+//    // todo: move to `new()`
+//    pub fn create(mut self) -> bool {
+////        gl.CreateProgram()
+//    }
 
-    fn link(mut self) -> bool {
-
+    pub  fn link(mut self) -> bool {
+        true
     }
 
     /// use current program
-    fn active(mut self) -> bool {
+    pub fn active(mut self) -> bool {
         //        gl.UseProgram(name);
+        true
     }
 
     /// reset to default program, namely program 0
-    fn inactive(mut self) -> bool {
+    pub fn inactive(mut self) -> bool {
         //        gl.UseProgram(name);
+        true
     }
 
     #[inline]
@@ -90,6 +109,7 @@ impl ShaderProgram {
 //            );
 //        }
 //        program
+        String::from("")
     }
 
     // todo: 补充设置Attribute, uniform的数据接口
@@ -98,12 +118,16 @@ impl ShaderProgram {
     }
 
     /// only use in debug mode
-    fn validate(mut self) -> bool {}
+    pub fn validate(mut self) -> bool {
+        true
+    }
 
-    fn dispatch_compute(mut self) -> bool {}
+    pub fn dispatch_compute(mut self) -> bool {
+        true
+    }
 
-    pub fn set_enable_program_pipeline(enable: bool) {
-        enable_program_pipeline = enable;
+    pub fn set_enable_program_pipeline(mut self, enable: bool) {
+        self.enable_program_pipeline = enable;
     }
 
     pub fn set_enable_merge_vertex_buffer_array() {}
@@ -124,17 +148,17 @@ impl ShaderProgram {
         //    glProgramParameteriEXT(_id, GL_PROGRAM_SEPARABLE_EXT, enabled ? GL_TRUE : GL_FALSE);
     }
 
-    fn get_attribute_location(&self, name: String) -> i32 {}
-    fn get_uniform_location(&self, name: String) -> i32 {}
-    fn get_uniform_block_index(&self, name: String) -> i32 {}
+//    fn get_attribute_location(&self, name: String) -> i32 {}
+//    fn get_uniform_location(&self, name: String) -> i32 {}
+//    fn get_uniform_block_index(&self, name: String) -> i32 {}
 
-    fn transform_feedback_varyings(&self, name: String) -> i32 {}
-    fn set_transform_feedback_outputs(&self, name: String) -> i32 {}
-    fn set_transform_feedback_mode(&self, mode: TransformFeedbackBufferMode) -> i32 {}
+//    fn transform_feedback_varyings(&self, name: String) -> i32 {}
+//    fn set_transform_feedback_outputs(&self, name: String) -> i32 {}
+//    fn set_transform_feedback_mode(&self, mode: TransformFeedbackBufferMode) -> i32 {}
 }
 
 
-impl Drop for Program {
+impl Drop for ShaderProgram {
     #[inline]
     fn drop(&mut self) {
 //        if self.id != 0 {
