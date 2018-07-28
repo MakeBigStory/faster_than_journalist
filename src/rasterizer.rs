@@ -31,7 +31,7 @@ impl DepthTest {
         DepthTest{
             on: true,
             depth_mask: true,
-            func: DepthOp::Less,
+            func: Comparison::Less,
         }
     }
 }

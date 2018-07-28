@@ -179,7 +179,7 @@ pub enum BlendFactor {
     OneMinusSrcAlpha = es20d::GL_ONE_MINUS_SRC_ALPHA as isize,
     DstAlpha = es20d::GL_DST_ALPHA as isize,
     OneMinusDstAlpha = es20d::GL_ONE_MINUS_DST_ALPHA as isize,
-    ConstColor = es20d::GL_CONSTANT_COLOR,
+    ConstColor = es20d::GL_CONSTANT_COLOR as isize,
     OneMinusConstColor = es20d::GL_ONE_MINUS_CONSTANT_COLOR as isize,
     ConstAlpha = es20d::GL_CONSTANT_ALPHA as isize,
     OneMinusConstAlpha = es20d::GL_ONE_MINUS_CONSTANT_ALPHA as isize,
