@@ -450,19 +450,6 @@ impl Texture {
     }
 }
 
-impl Drop for GLTexture {
-    #[inline]
-    fn drop(&mut self) {
-        if self.id != 0 {
-            unsafe {
-                gl::DeleteTextures(1, &self.id);
-            }
-
-            self.id = 0;
-        }
-    }
-}
-
 impl Drop for Texture {
     fn drop(&mut self) {
         es20::wrapper::delete_textures([self.id]);
