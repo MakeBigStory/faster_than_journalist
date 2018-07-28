@@ -5,14 +5,14 @@ use super::device::Device;
 use super::render_state::RenderState;
 
 #[derive(Debug)]
-struct RenderPipeline<'a> {
+struct RenderPipeline<'a, 'b> {
     program: &'a mut ShaderProgram,
-    framebuffer: &'a mut FrameBuffer,
+    framebuffer: &'a mut FrameBuffer<'b>,
     device: &'a mut Device,
     render_state: &'a mut RenderState
 }
 
-impl<'a> RenderPipeline<'a> {
+impl<'a, 'b> RenderPipeline<'a, 'b> {
     fn execute(&mut self) -> Result<u32, &str> {
         self.device.prepare();
 
