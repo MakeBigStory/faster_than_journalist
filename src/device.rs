@@ -12,18 +12,15 @@ impl Device {
 //    fn query_features() {}
 //    fn query_feature() {}
 
-    pub fn prepare() -> Result<u32, &str> {
-        Ok(0)
+    pub fn prepare() {
     }
 
-    pub fn flush() -> Result<u32, &str> {
+    pub fn flush() {
         flush();
-        Ok(0)
     }
 
-    pub fn finish() -> Result<u32, &str> {
+    pub fn finish() {
         finish();
-        Ok(0)
     }
 }
 
