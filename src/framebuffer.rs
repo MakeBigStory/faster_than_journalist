@@ -191,7 +191,7 @@ impl<'a> FrameBuffer<'a> {
                     }
                 }
 
-                self.attachments.remove(i);
+                //self.attachments.remove(i);
                 break;
             } else {
                 continue;
@@ -199,7 +199,7 @@ impl<'a> FrameBuffer<'a> {
         }
     }
 
-    fn allocate_attachment_usage(&self, attach: &Attachment) -> u32 {
+    fn allocate_attachment_usage(&mut self, attach: &Attachment) -> u32 {
         let attach_usage = match attach.usage {
             AttachmentUsage::ColorAttach => {
                 let mut gl_color_attach: u32 = 0;

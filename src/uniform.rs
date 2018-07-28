@@ -14,13 +14,14 @@ pub struct Uniform {
 
 impl Uniform {
     #[inline(always)]
-    pub fn new(kind: UniformKind, count: usize, location: usize) -> Self {
+ /*   pub fn new(kind: UniformKind, count: usize, location: usize) -> Self {
         Uniform {
 //            kind,
             count,
             location,
         }
     }
+    */
 
 //    #[inline(always)]
 //    pub fn kind(&self) -> &UniformKind {
