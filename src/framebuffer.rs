@@ -272,9 +272,7 @@ impl Drop for FrameBuffer {
     #[inline]
     fn drop(&mut self) {
         if self.id != 0 {
-            unsafe {
-                gl::DeleteFramebuffers(1, &self.id);
-            }
+            es20::wrapper::delete_framebuffers( &[self.id]);
         }
     }
 }

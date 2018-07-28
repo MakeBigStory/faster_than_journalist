@@ -18,6 +18,7 @@ mod version;
 use device::Device;
 mod render_pipeline;
 mod render_state;
+mod rasterizer::*;
 
 fn main() {
     println!("Hello, world!");

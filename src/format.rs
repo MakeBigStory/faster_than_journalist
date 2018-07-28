@@ -167,17 +167,78 @@ pub enum Format {
 }
 
 #[derive(Copy, Clone, Debug)]
-pub enum BlendMode {
-
+pub enum BlendFactor {
+    //todo: 只包含了20 blend
+    Zero = es20d::GL_ZERO as isize,
+    One = es20d::GL_ONE as isize,
+    SrcColor = es20d::GL_SRC_COLOR as isize,
+    OneMinusSrcColor = es20d::GL_ONE_MINUS_SRC_COLOR as isize,
+    DstColor = es20d::GL_DST_COLOR as isize,
+    OneMinusDstColor = es20d::GL_ONE_MINUS_DST_COLOR as isize,
+    SrcAlpha = es20d::GL_SRC_ALPHA as isize,
+    OneMinusSrcAlpha = es20d::GL_ONE_MINUS_SRC_ALPHA as isize,
+    DstAlpha = es20d::GL_DST_ALPHA as isize,
+    OneMinusDstAlpha = es20d::GL_ONE_MINUS_DST_ALPHA as isize,
+    ConstColor = es20d::GL_CONSTANT_COLOR,
+    OneMinusConstColor = es20d::GL_ONE_MINUS_CONSTANT_COLOR as isize,
+    ConstAlpha = es20d::GL_CONSTANT_ALPHA as isize,
+    OneMinusConstAlpha = es20d::GL_ONE_MINUS_CONSTANT_ALPHA as isize,
+    SrcAlphaSaturate = es20d::GL_SRC_ALPHA_SATURATE as isize,
 }
 
 #[derive(Copy, Clone, Debug)]
-pub enum DepthMode {
+pub enum BlendMod {
+    Add,
+    Sub,
+    RevSub,
+    Min,
+    Max,
+}
 
+//todo: separate fun要不要启用？
+#[derive(Copy, Clone, Debug)]
+pub enum Comparison {
+    Always = es20d::GL_ALWAYS as isize,
+    Never = es20d::GL_NEVER as isize,
+    Less = es20d::GL_LESS as isize,
+    Equal = es20d::GL_EQUAL as isize,
+    LeEqual = es20d::GL_LEQUAL as isize,
+    Greater = es20d::GL_GREATER as isize,
+    NotEqual = es20d::GL_NOTEQUAL as isize,
+    GeEqual = es20d::GL_GEQUAL as isize,
+}
 
+//todo: separate 函数要不要使用
+#[derive(Copy, Clone, Debug)]
+pub enum StencilOp {
+    Keep = es20d::GL_KEEP as isize,
+    Zero = es20d::GL_ZERO as isize,
+    Replace = es20d::GL_REPLACE as isize,
+    Incr = es20d::GL_INCR as isize,
+    IncrWrap = es20d::GL_INCR_WRAP as isize,
+    Decr = es20d::GL_DECR as isize,
+    DecrWrap = es20d::GL_DECR_WRAP as isize,
+    Inver = es20d::GL_INVERT as isizet,
 }
 
 #[derive(Copy, Clone, Debug)]
-pub enum StencilMode {
-
+pub enum CullMode {
+    Front = es20d::GL_FRONT as isize,
+    Back = es20d::GL_BACK as isize,
 }
+
+#[derive(Copy, Clone, Debug)]
+pub enum FrontFaceMode {
+    CW = es20d::GL_CW as isize,
+    CCW = es20d::GL_CCW as isize,
+}
+
+/*
+//opengles don't support
+#[derive(Copy, Clone, Debug)]
+pub enum PolygonMode{
+    Point,
+    Line,
+    Fill,
+}
+*/
