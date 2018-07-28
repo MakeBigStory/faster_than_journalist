@@ -22,10 +22,10 @@ impl Uniform {
         }
     }
 
-    #[inline(always)]
-    pub fn kind(&self) -> &UniformKind {
-        &self.kind
-    }
+//    #[inline(always)]
+//    pub fn kind(&self) -> &UniformKind {
+//        &self.kind
+//    }
     #[inline(always)]
     pub fn count(&self) -> usize {
         self.count
@@ -129,7 +129,7 @@ impl Uniform {
         unsafe {
             active_texture(GL_TEXTURE0 + index as GLuint);
             uniform1i(self.location as GLint, index as GLint);
-            bind_texture(texture.kind().into(), texture.id());
+//            bind_texture(texture.kind().into(), texture.id());
         }
     }
 }
