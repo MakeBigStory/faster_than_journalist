@@ -1,23 +1,18 @@
-use gles::es20::data_struct as es20d;
+use gles::es20::data_struct::*;
+use gles::es20::wrapper::*;
+
 use gles::es30::data_struct as es30d;
-use gles::es31::data_struct as es31d;
-use gles::es32::data_struct as es32d;
 
-use self::es20d::*;
-use self::es30d::*;
-
-use gles::es20::{data_struct, wrapper};
-
-use std::ptr;
+use renderbuffer::*;
+use std::error::Error;
 use std::fmt;
 use std::fmt::Formatter;
-use std::error::Error;
 use std::mem;
+use std::ptr;
 use texture::*;
-use renderbuffer::*;
 
 #[derive(Copy, Clone, Debug)]
-pub enum AttachmentUsage{
+pub enum AttachmentUsage {
     ColorAttach,
     DepthAttach,
     StencilAttach,
@@ -33,37 +28,37 @@ pub enum AttachmentType<'a> {
 #[derive(Copy, Clone, Debug)]
 pub enum FrameBufferStatus {
     /** The framebuffer is complete */
-    Complete = es20d::GL_FRAMEBUFFER_COMPLETE,
+    Complete = GL_FRAMEBUFFER_COMPLETE as isize,
 
     /** Any of the attachment points are incomplete */
-    IncompleteAttachment = es20d::GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT,
+    IncompleteAttachment = GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT as isize,
 
     /** The framebuffer does not have at least one image attached to it */
-    IncompleteMissingAttachment = es20d::GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT,
+    IncompleteMissingAttachment = GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT as isize,
 
     /**
      * Combination of internal formats of the attached images violates
      * an implementation-dependent set of restrictions.
      */
-    Unsupported = es20d::GL_FRAMEBUFFER_UNSUPPORTED,
+    Unsupported = GL_FRAMEBUFFER_UNSUPPORTED as isize,
 
     /// Sample count or locations are not the same for all attached images.
-    IncompleteMultisample = es30d::GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE,
+    IncompleteMultisample = es30d::GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE as isize,
     // todo: ES 2.0 iOS
     //IncompleteMultisample = GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_APPLE,
 }
 
 #[derive(Clone, Debug)]
-pub struct Attachment<'a>{
-//    pub label: String,
+pub struct Attachment<'a> {
+    pub label: String,
     pub usage: AttachmentUsage,
-    pub attachment_type: AttachmentType<'a>
+    pub attachment_type: AttachmentType<'a>,
 }
 
-impl Attachment{
-    fn new(label:String, usage: AttachmentUsage, attachment_type: AttachmentType) -> Attachment {
-        Attachment{
-//            label: lable,
+impl<'a> Attachment<'a> {
+    fn new(label: String, usage: AttachmentUsage, attachment_type: AttachmentType) -> Attachment {
+        Attachment {
+            label,
             usage,
             attachment_type,
         }
@@ -75,7 +70,7 @@ pub enum FrameBufferUsage {
     //todo:
     Read,
     Write,
-    ReadWrite = es20d::GL_FRAMEBUFFER as isize,
+    ReadWrite = GL_FRAMEBUFFER as isize,
 }
 
 #[derive(Clone, Debug)]
@@ -85,14 +80,14 @@ pub(crate) struct FrameBuffer<'a> {
     pub id: u32,
     num: u32,
     usage: FrameBufferUsage,
-    attachments: Vec<(Attachment<'a>, u32)>
+    attachments: Vec<(Attachment<'a>, u32)>,
 }
 
-impl FrameBuffer {
+impl<'a> FrameBuffer<'a> {
     #[inline(always)]
-    pub fn new(label:String) -> Self {
-        let id = es20d::wrapper::gen_framebuffers(1)[0];
-        FrameBuffer{
+    pub fn new(label: String) -> Self {
+        let id = gen_framebuffers(1)[0];
+        FrameBuffer {
             label,
             status: FrameBufferStatus::IncompleteAttachment,
             id,
@@ -111,11 +106,12 @@ impl FrameBuffer {
 
     #[inline]
     pub fn unbind(&self) {
-        es20d::wrapper::bind_framebuffer(es20d::GL_FRAMEBUFFER, 0);
+        bind_framebuffer(GL_FRAMEBUFFER, 0);
     }
 
     #[inline]
-    pub fn bind(&self) { es20d::wrapper::bind_framebuffer(es20d::GL_FRAMEBUFFER, self.id);
+    pub fn bind(&self) {
+        bind_framebuffer(GL_FRAMEBUFFER, self.id);
     }
 
     /// todo: only 1 supported with es20
@@ -125,26 +121,18 @@ impl FrameBuffer {
 
     pub fn check_status(&self) -> FrameBufferStatus {
         //todo : 原来的有30或者31的，对不上号，改了。
-        match es20d::wrapper::check_framebuffer_status(self.usage as _) {
-            es20d::GL_FRAMEBUFFER_COMPLETE => {
-                FrameBufferStatus::Complete
-            }
-            es20d::GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT=> {
-                FrameBufferStatus::IncompleteAttachment
-            }
-            es20d::GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT=>{
+        match check_framebuffer_status(self.usage as _) {
+            GL_FRAMEBUFFER_COMPLETE => FrameBufferStatus::Complete,
+            GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT => FrameBufferStatus::IncompleteAttachment,
+            GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT => {
                 FrameBufferStatus::IncompleteMissingAttachment
             }
-            es20d::GL_FRAMEBUFFER_UNSUPPORTED=>{
-                FrameBufferStatus::Unsupported
-            }
-            _ => {
-                panic!("Frame buffer: not support status")
-            }
+            GL_FRAMEBUFFER_UNSUPPORTED => FrameBufferStatus::Unsupported,
+            _ => panic!("Frame buffer: not support status"),
         }
     }
 
-    pub fn attach(&mut self, attachments: &[Attachment]){
+    pub fn attach(&mut self, attachments: &[Attachment]) {
         self.bind();
         for attach in attachments {
             let attach_usage = self.allocate_attachment_usage(attach);
@@ -153,16 +141,24 @@ impl FrameBuffer {
             match attach.attachment_type {
                 AttachmentType::TextureAttachment(texture) => {
                     texture.bind();
-                    es20d::wrapper::framebuffer_texture_2d(self.usage, attach_usage,
-                    texture.desc.texture_type as _,texture.id, texture.desc.level);
+                    framebuffer_texture_2d(
+                        self.usage,
+                        attach_usage,
+                        texture.desc.texture_type as _,
+                        texture.id,
+                        texture.desc.level,
+                    );
                     texture.unbind();
-                },
-                AttachmentType::RenderBufferAttachment(renderBuffer)=>{
+                }
+                AttachmentType::RenderBufferAttachment(renderBuffer) => {
                     renderBuffer.bind();
-                    es20d::wrapper::framebuffer_renderbuffer(self.usage, attach_usage,
-                    es20d::GL_RENDERBUFFER, renderBuffer.id);
+                    framebuffer_renderbuffer(
+                        self.usage,
+                        attach_usage,
+                        GL_RENDERBUFFER,
+                        renderBuffer.id,
+                    );
                     renderBuffer.unbind();
-
                 }
             }
         }
@@ -171,28 +167,30 @@ impl FrameBuffer {
 
     pub fn detach(&mut self, label: String) {
         for (i, attach) in self.attachments.iter().enumerate() {
-            if attachment.lable == lable {
+            if self.attachment.label == label {
                 let attach_usage = attach.1;
                 match attach.0.attachment_type {
                     AttachmentType::TextureAttachment(texture) => {
                         texture.bind();
-                        es20d::wrapper::framebuffer_texture_2d(self.usage, attach_usage,
-                                                              texture.desc.texture_type as _,0, 0);
+                        framebuffer_texture_2d(
+                            self.usage,
+                            attach_usage,
+                            texture.desc.texture_type as _,
+                            0,
+                            0,
+                        );
                         texture.unbind();
-                    },
-                    AttachmentType::RenderBufferAttachment(renderBuffer)=>{
+                    }
+                    AttachmentType::RenderBufferAttachment(renderBuffer) => {
                         renderBuffer.bind();
-                        es20d::wrapper::framebuffer_renderbuffer(self.usage, attach_usage,
-                                                                es20d::GL_RENDERBUFFER, 0);
+                        framebuffer_renderbuffer(self.usage, attach_usage, GL_RENDERBUFFER, 0);
                         renderBuffer.unbind();
-
                     }
                 }
 
                 self.attachments.remove(i);
                 break;
-            }
-            else {
+            } else {
                 continue;
             }
         }
@@ -201,38 +199,27 @@ impl FrameBuffer {
     fn allocate_attachment_usage(&self, attach: &Attachment) -> u32 {
         let attach_usage = match attach.usage {
             AttachmentUsage::ColorAttach => {
-                let mut gl_color_attach:u32 = 0;
+                let mut gl_color_attach: u32 = 0;
                 if self.num == 0 {
-                    gl_color_attach = es20d::GL_COLOR_ATTACHMENT0;
+                    gl_color_attach = GL_COLOR_ATTACHMENT0;
+                } else {
+                    gl_color_attach = es30d::GL_COLOR_ATTACHMENT1 + self.num - 1;
                 }
-                    else {
-                        gl_color_attach = es30d::GL_COLOR_ATTACHMENT1 + self.num - 1;
-                    }
                 self.num = self.num + 1;
                 (gl_color_attach)
-            },
-            AttachmentUsage::DepthAttach => {
-                es20d::GL_DEPTH_ATTACHMENT
-            },
-            AttachmentUsage::StencilAttach=> {
-                panic!("frame buffer: do not support")
-            },
-            AttachmentUsage::DepthStencil => {
-                panic!("frame buffer: do not support")
             }
+            AttachmentUsage::DepthAttach => GL_DEPTH_ATTACHMENT,
+            AttachmentUsage::StencilAttach => panic!("frame buffer: do not support"),
+            AttachmentUsage::DepthStencil => panic!("frame buffer: do not support"),
         };
         attach_usage
     }
 
     //todo: attachment 是不是只应该由framebuffer管理??s
-    pub fn detach_batch(&mut self, attachments:&[Attachment]) {
-
-    }
+    pub fn detach_batch(&mut self, attachments: &[Attachment]) {}
 
     //Todo: invalidate ?
-    pub fn invalidate(&mut self) {
-
-    }
+    pub fn invalidate(&mut self) {}
 
     //todo: useless? when use state?
     fn attach_cube_map_texture(&mut self) {
@@ -267,7 +254,7 @@ impl FrameBuffer {
     }
 }
 
-impl Drop for FrameBuffer {
+impl<'a> Drop for FrameBuffer<'a> {
     #[inline]
     fn drop(&mut self) {
         if self.id != 0 {

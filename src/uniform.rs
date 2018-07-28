@@ -1,8 +1,13 @@
 use super::texture::Texture;
 
+use gles::es20::data_struct::*;
+use gles::es20::wrapper::*;
+
+enum UniformKind{}
+
 #[derive(Debug, Clone, Hash)]
 pub struct Uniform {
-    kind: UniformKind,
+//    kind: UniformKind,
     count: usize,
     location: usize,
 }
@@ -11,7 +16,7 @@ impl Uniform {
     #[inline(always)]
     pub fn new(kind: UniformKind, count: usize, location: usize) -> Self {
         Uniform {
-            kind,
+//            kind,
             count,
             location,
         }
@@ -36,9 +41,9 @@ macro_rules! create_set_uniform {
     ($name: ident, $func: ident, $kind: ident) => (
         #[inline]
         pub fn $name(&self, value: $kind) {
-            unsafe {
-                gl::$func(self.location as GLint, value);
-            }
+//            unsafe {
+//                gl::$func(self.location as GLint, value);
+//            }
         }
     )
 }
@@ -47,9 +52,9 @@ macro_rules! create_set_vec_uniform {
     ($name: ident, $func: ident, $kind: ident, $item_count: expr) => (
         #[inline]
         pub fn $name(&self, value: &[$kind; $item_count]) {
-            unsafe {
-                gl::$func(self.location as GLint, 1 as GLint, value.as_ptr());
-            }
+//            unsafe {
+//                gl::$func(self.location as GLint, 1 as GLint, value.as_ptr());
+//            }
         }
     )
 }
@@ -58,9 +63,9 @@ macro_rules! create_set_matrix_uniform {
     ($name: ident, $func: ident, $kind: ident, $item_count: expr) => (
         #[inline]
         pub fn $name(&self, value: &[$kind; $item_count]) {
-            unsafe {
-                gl::$func(self.location as GLint, 1 as GLint, gl::FALSE, value.as_ptr());
-            }
+//            unsafe {
+//                gl::$func(self.location as GLint, 1 as GLint, gl::FALSE, value.as_ptr());
+//            }
         }
     )
 }
@@ -88,7 +93,7 @@ macro_rules! create_set_vec_uniform_size {
         #[inline]
         pub fn $name(&self, values: &[$kind]) {
             unsafe {
-                gl::$func(self.location as GLint, self.count as GLint, values.as_ptr());
+//                gl::$func(self.location as GLint, self.count as GLint, values.as_ptr());
             }
         }
     )
@@ -99,7 +104,7 @@ macro_rules! create_set_matrix_uniform_size {
         #[inline]
         pub fn $name(&self, values: &[$kind]) {
             unsafe {
-                gl::$func(self.location as GLint, self.count as GLint, gl::FALSE, values.as_ptr());
+//                gl::$func(self.location as GLint, self.count as GLint, gl::FALSE, values.as_ptr());
             }
         }
     )
@@ -122,9 +127,9 @@ impl Uniform {
     #[inline]
     pub fn set_sampler_2d(&self, texture: &Texture, index: usize) {
         unsafe {
-            gl::ActiveTexture(gl::TEXTURE0 + index as GLuint);
-            gl::Uniform1i(self.location as GLint, index as GLint);
-            gl::BindTexture(texture.kind().into(), texture.id());
+            active_texture(GL_TEXTURE0 + index as GLuint);
+            uniform1i(self.location as GLint, index as GLint);
+            bind_texture(texture.kind().into(), texture.id());
         }
     }
 }

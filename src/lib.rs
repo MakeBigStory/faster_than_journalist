@@ -1,19 +1,29 @@
 extern crate opengles_rs as gles;
 
-pub use self::shader_program::*;
 pub use self::shader::*;
+pub use self::shader_program::*;
 
-pub mod shader_program;
 pub mod shader;
-
-
+pub mod shader_program;
 
 static SIMPLE_VERTEX_DATA: [f32; 16] = [
     //   position     uv
-    1f32,  1f32,   1f32, 1f32,
-    -1f32,  1f32,   0f32, 1f32,
-    1f32, -1f32,   1f32, 0f32,
-    -1f32, -1f32,   0f32, 0f32
+    1f32,
+    1f32,
+    1f32,
+    1f32,
+    -1f32,
+    1f32,
+    0f32,
+    1f32,
+    1f32,
+    -1f32,
+    1f32,
+    0f32,
+    -1f32,
+    -1f32,
+    0f32,
+    0f32,
 ];
 
 static SIMPLE_VERTEX: &'static str = "
@@ -42,9 +52,8 @@ static SIMPLE_FRAGMENT: &'static str = "
     }
 ";
 
-
 #[no_mangle]
-pub extern fn init_triangle_program(){
+pub extern "C" fn init_triangle_program() {
     let program = ShaderProgram::create_render_program(SIMPLE_VERTEX, SIMPLE_FRAGMENT);
 }
 
