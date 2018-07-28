@@ -12,7 +12,7 @@ struct RenderPipeline<'a, 'b: 'a> {
     render_state: &'a mut RenderState
 }
 
-impl<'a, 'b> RenderPipeline<'a, 'b> {
+impl<'a, 'b: 'a> RenderPipeline<'a, 'b> {
     fn execute(&mut self) -> Result<u32, &str> {
         self.device.prepare();
 
@@ -21,22 +21,22 @@ impl<'a, 'b> RenderPipeline<'a, 'b> {
         Ok(0)
     }
 
-    fn attach_device(&mut self, device: &mut Device) -> &mut Self {
+    fn attach_device(&mut self, device: &'b mut Device) -> &mut Self {
         self.device = device;
         self
     }
 
-    fn set_program(&mut self, program: &mut ShaderProgram) -> &mut Self {
+    fn set_program(&mut self, program: &'b mut ShaderProgram) -> &mut Self {
         self.program = program;
         self
     }
 
-    fn set_framebuffer(&mut self, framebuffer: &mut FrameBuffer) -> &mut Self {
+    fn set_framebuffer(&mut self, framebuffer: &'b mut FrameBuffer<'b>) -> &mut Self {
         self.framebuffer = framebuffer;
         self
     }
 
-    fn set_render_state(&mut self, render_state: &mut RenderState) -> &mut Self {
+    fn set_render_state(&mut self, render_state: &'b mut RenderState) -> &mut Self {
         self.render_state = render_state;
         self
     }
