@@ -1,7 +1,7 @@
 use shader::Shader;
 
 #[derive(Debug)]
-struct ShaderProgram {
+pub(crate) struct ShaderProgram {
     label: String,
     transform_feedback_varying_names: [String],
     program_id: i32,
