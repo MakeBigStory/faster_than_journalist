@@ -20,6 +20,8 @@ mod render_pipeline;
 mod render_state;
 mod uniform;
 mod rasterizer;
+mod attribute;
+mod shader_argument_vertex;
 
 fn main() {
     println!("Hello, world!");

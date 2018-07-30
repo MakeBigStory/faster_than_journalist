@@ -1,10 +1,23 @@
+use gles::es20::data_struct as es20d;
+use gles::es30::data_struct as es30d;
+use gles::es31::data_struct as es31d;
+use gles::es32::data_struct as es32d;
+
+use gles::es20;
+use gles::es30;
+use gles::es31;
+use gles::es32;
+
+use format::*;
+
+//todo: 目前根据一个attribute对应一个buffer
 #[derive(Debug, Clone, Hash)]
 pub struct Attribute {
-    kind: AttributeKind,
-    count: usize,
-    item_count: usize,
-    item_kind: DataKind,
-    location: usize,
+    pub kind: AttributeKind,
+    pub count: usize,
+    pub item_count: usize,
+    pub item_kind: DataKind,
+    pub location: usize,
 }
 
 impl Attribute {
@@ -13,11 +26,11 @@ impl Attribute {
         let (item_count, item_kind) = kind.item_data();
 
         Attribute {
-            kind: kind,
-            count: count,
-            item_count: item_count,
-            item_kind: item_kind,
-            location: location,
+            kind,
+            count,
+            item_count,
+            item_kind,
+            location,
         }
     }
 

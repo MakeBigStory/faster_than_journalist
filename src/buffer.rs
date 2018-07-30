@@ -14,66 +14,29 @@ use std::fmt::Formatter;
 use std::error::Error;
 use std::mem;
 
+use format::*;
 
-// TODO: 为什么不能直接 as u32?
-#[derive(Copy, Debug, Clone)]
-pub enum BufferType {
-    ArrayBuffer = es20d::GL_ARRAY_BUFFER as isize,
-    ElementArrayBuffer = es20d::GL_ELEMENT_ARRAY_BUFFER as isize,
-
-    PixelPackBuffer = es30d::GL_PIXEL_PACK_BUFFER as isize,
-    PixelUnpackBuffer = es30d::GL_PIXEL_UNPACK_BUFFER as isize,
-    UniformBuffer = es30d::GL_UNIFORM_BUFFER as isize,
-
-    TransformFeedbackBuffer = es30d::GL_TRANSFORM_FEEDBACK_BUFFER as isize,
-    DrawIndirectBuffer = es31d::GL_DRAW_INDIRECT_BUFFER as isize,
-
-    //feiper: for copy buffer to another
-    //COPY_READ_BUFFER,
-    //COPY_WRITE_BUFFER,
-
-}
-
-#[derive(Copy, Debug, Clone)]
-pub enum BufferUsage {
-    /// Set once by the application and used infrequently for drawing.
-    StreamDraw = es20d::GL_STREAM_DRAW as isize,
-    /// Set once as output from an OpenGL command and used infequently for drawing.
-    StreamRead = es30d::GL_STREAM_READ as isize,
-    /// Set once as output from an OpenGL command and used infrequently for drawing or copying to other buffers.
-    StreamCopy = es30d::GL_STREAM_COPY as isize,
-
-    /// Set once by the application and used frequently for drawing. A good default choice if you are not sure.
-    StaticDraw = es20d::GL_STATIC_DRAW as isize,
-    /// Set once as output from an OpenGL command and queried many times by the application.
-    StaticRead = es30d::GL_STATIC_READ as isize,
-    /// Set once as output from an OpenGL command and used frequently for drawing or copying to other buffers.
-    StaticCopy = es30d::GL_STATIC_COPY as isize,
-
-    /// Updated frequently by the application and used frequently for drawing or copying to other images.
-    DynamicDraw = es20d::GL_DYNAMIC_DRAW as isize,
-    /// Updated frequently as output from OpenGL command and queried many times from the application.
-    DynamicRead = es30d::GL_DYNAMIC_READ as isize,
-    /// Updated frequently as output from OpenGL command and used frequently for drawing or copying to other images.
-    DynamicCopy = es30d::GL_DYNAMIC_COPY as isize,
-}
-
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Hash)]
 pub struct BufferDesc {
     pub label: String,
-    target: BufferType,
-    usage: BufferUsage,
-    size: u32,
+    pub target: BufferType,
+    pub usage: BufferUsage,
+    pub size: u32,
+    pub kind: DataKind,
+    pub stride: u32,
 }
 
 impl BufferDesc {
-    fn new(label:String, target: BufferType, usage: BufferUsage, size : u32)
+    fn new(label: String, target: BufferType, usage: BufferUsage, size: u32,
+           kind: DataKind, stride:u32)
            -> BufferDesc {
         BufferDesc {
             label,
             target,
             usage,
             size,
+            kind,
+            stride,
         }
     }
 
@@ -86,10 +49,28 @@ impl BufferDesc {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash)]
 pub struct Buffer {
-    desc: BufferDesc,
-    raw: Option<u32>,
+    pub desc: BufferDesc,
+    pub raw: Option<u32>,
+}
+
+impl PartialEq for Buffer{
+    fn eq(&self, other: &Buffer) -> bool {
+        match self.raw {
+            Some(id) => {
+                match other.raw {
+                    Some(other_id) => {
+                        id == other_id
+                    },
+                    None=>{
+                        false
+                    }
+                }
+            },
+            None=>{false}
+        }
+    }
 }
 
 impl Buffer {

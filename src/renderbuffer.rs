@@ -18,7 +18,7 @@ use format::*;
 #[derive(Clone,Debug)]
 pub struct RenderBuffer {
     pub label: String,
-    pub format: TextureFormat,
+    pub format: DataFormat,
     pub id: u32,
     pub width: u32,
     pub height: u32,
@@ -29,14 +29,14 @@ impl RenderBuffer {
         let raw = es20::wrapper::gen_renderbuffers(1)[0];
         RenderBuffer{
             label,
-            format: TextureFormat::DepthComponent,
+            format: DataFormat::DepthComponent,
             id: raw,
             width: 0,
             height: 0,
         }
     }
 
-    pub fn set_storage(&mut self, format: TextureFormat, width: u32, height: u32) {
+    pub fn set_storage(&mut self, format: DataFormat, width: u32, height: u32) {
         self.bind();
         es20::wrapper::renderbuffer_storage(es20d::GL_RENDERBUFFER,
                                             format as _ ,

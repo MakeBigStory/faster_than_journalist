@@ -10,42 +10,12 @@ use std::fmt::Formatter;
 use std::mem;
 use std::ptr;
 use texture::*;
-
-#[derive(Copy, Clone, Debug)]
-pub enum AttachmentUsage {
-    ColorAttach,
-    DepthAttach,
-    StencilAttach,
-    DepthStencil,
-}
+use format::*;
 
 #[derive(Copy, Clone, Debug)]
 pub enum AttachmentType<'a> {
     TextureAttachment(&'a Texture),
     RenderBufferAttachment(&'a RenderBuffer),
-}
-
-#[derive(Copy, Clone, Debug)]
-pub enum FrameBufferStatus {
-    /** The framebuffer is complete */
-    Complete = GL_FRAMEBUFFER_COMPLETE as isize,
-
-    /** Any of the attachment points are incomplete */
-    IncompleteAttachment = GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT as isize,
-
-    /** The framebuffer does not have at least one image attached to it */
-    IncompleteMissingAttachment = GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT as isize,
-
-    /**
-     * Combination of internal formats of the attached images violates
-     * an implementation-dependent set of restrictions.
-     */
-    Unsupported = GL_FRAMEBUFFER_UNSUPPORTED as isize,
-
-    /// Sample count or locations are not the same for all attached images.
-    IncompleteMultisample = es30d::GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE as isize,
-    // todo: ES 2.0 iOS
-    //IncompleteMultisample = GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE_APPLE,
 }
 
 #[derive(Clone, Debug)]
