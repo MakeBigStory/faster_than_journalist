@@ -116,7 +116,7 @@ impl<'a> FrameBuffer<'a> {
 
     // todo: deal with es 3.x
     /// Max supported color attachment count
-    fn max_color_attachments(&self) -> i32 {
+    pub fn max_color_attachments(&self) -> i32 {
         1 // ES 2.0 standard supports one color attachment only
     }
 
