@@ -27,7 +27,7 @@ pub struct Shader {
     can_reuse: bool,
     version: ShaderLanguageVersion,
     shader_id : GLuint,
-    need_compile : bool
+    ready: bool
 }
 
 impl Shader {
@@ -39,7 +39,7 @@ impl Shader {
             can_reuse: false,
             version: ShaderLanguageVersion::Version100,
             shader_id: 0,
-            need_compile: true
+            ready: true
         }
     }
 
@@ -163,7 +163,7 @@ impl Shader {
 
     pub fn set_source(&mut self, new_source: String) {
         self.source = new_source;
-        self.need_compile = true;
+        self.ready = true;
     }
 
     pub fn attach(&mut self, program_id : GLuint) -> Result<(), String> {
@@ -178,7 +178,7 @@ impl Shader {
     ///
     /// Returns a shader or a message with the error.
     pub fn compile(&mut self) -> Result<(), String> {
-        if !self.need_compile {
+        if !self.ready {
             return Ok(())
         }
 
@@ -200,9 +200,18 @@ impl Shader {
             }
         }
 
-        self.need_compile = true;
+        self.ready = true;
 
         Ok(())
+    }
+}
+
+impl Drop for Shader {
+    fn drop(&mut self) {
+        Shader::delete_shader(delete_shader).unwrap();
+
+        self.shader_id = 0;
+        self.ready = false;
     }
 }
     // Finds attribute location from a program.
