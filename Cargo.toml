@@ -5,3 +5,6 @@ authors = ["Michael-LAI JINFENG <cihv2@163.com>"]
 
 [dependencies]
 opengles-rs = {git = "https://github.com/MakeBigStory/opengles-rs"}
+
+[lib]
+crate-type = ["staticlib", "dylib"]
