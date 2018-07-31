@@ -114,9 +114,10 @@ impl<'a> FrameBuffer<'a> {
         bind_framebuffer(GL_FRAMEBUFFER, self.id);
     }
 
-    /// todo: only 1 supported with es20
+    // todo: deal with es 3.x
+    /// Max supported color attachment count
     fn max_color_attachments(&self) -> i32 {
-        1
+        1 // ES 2.0 standard supports one color attachment only
     }
 
     pub fn check_status(&self) -> FrameBufferStatus {
