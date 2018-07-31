@@ -6,5 +6,10 @@ authors = ["Michael-LAI JINFENG <cihv2@163.com>"]
 [dependencies]
 opengles-rs = {git = "https://github.com/MakeBigStory/opengles-rs"}
 
+[target.'cfg(target_os = "android")'.dependencies]
+log = "0.4"
+android_logger = "0.5"
+jni = { version = "0.5", default-features = false }
+
 [lib]
 crate-type = ["staticlib", "dylib"]
