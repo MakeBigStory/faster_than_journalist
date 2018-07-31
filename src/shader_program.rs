@@ -1,6 +1,9 @@
+use std::collections::HashMap;
+
 use gles::es20::data_struct::GLuint;
-use gles::es20::wrapper::delete_program;
+use gles::es20::wrapper;
 use shader::Shader;
+use shader::ShaderType;
 
 #[derive(Debug)]
 pub struct ShaderProgram {
@@ -10,12 +13,14 @@ pub struct ShaderProgram {
     enable_program_pipeline: bool,
     shader_count: u8,
     enable_merge_vertex_buffer_array: bool,
-    initialized: bool,
+    ready: bool,
+    can_reuse: bool,
+    shader_collection: HashMap<String, Shader>
 }
 
 impl ShaderProgram {
     #[inline]
-    pub fn create_render_program(vertex: &str, fragment: &str) -> Self {
+    pub fn create_shader_program(vertex: &str, fragment: &str) -> Self {
         let mut program = ShaderProgram {
             program_id: 0,
             enable_program_pipeline: false,
@@ -23,8 +28,21 @@ impl ShaderProgram {
             enable_merge_vertex_buffer_array: false,
             label: String::from(""),
             //            transform_feedback_varying_names: ,
-            initialized: false,
+            ready: false,
+            can_reuse: false,
+            shader_collection: HashMap::new()
         };
+
+        let mut vertex_shader = Shader::new("vertex",
+                                        ShaderType::Vertex,
+                                            vertex);
+        let mut fragment_shader = Shader::new("fragment",
+                                            ShaderType::Fragment,
+                                              fragment);
+
+        program.add_shader(vertex_shader);
+        program.add_shader(fragment_shader);
+
         program
     }
 
@@ -43,39 +61,99 @@ impl ShaderProgram {
     //        }
     //    }
 
-    pub fn initialize(&self) -> bool {
-        self.initialized
-    }
-
-    pub fn attach_shader(&mut self, shader: &Shader) {
-        //        unsafe { gl.AttachShader(name, shader) };
-    }
-
-    pub fn attach_shaders(mut self, shaders: &[Shader]) {
-        for shader in shaders {
-            self.attach_shader(shader);
+    fn create_program() -> Result<GLuint, String> {
+        match wrapper::create_program() {
+            0 => Err("Can not create program".to_string()),
+            program_id => Ok(program_id)
         }
     }
 
-    //    // todo: move to `new()`
-    //    pub fn create(mut self) -> bool {
-    ////        gl.CreateProgram()
-    //    }
+    fn validate_program(program_id : GLuint) -> Result<(), String> {
+        wrapper::validate_program(program_id);
 
-    pub fn link(mut self) -> bool {
-        true
+        // TODO: glGetError check
+        Ok(())
+    }
+
+    fn use_program(program_id : GLuint) -> Result<(), String> {
+        wrapper::use_program(program_id);
+
+        // TODO: glGetError check
+        Ok(())
+    }
+
+    fn delete_program(program_id : GLuint) -> Result<(), String> {
+        wrapper::delete_program(program_id);
+
+        // TODO: glGetError check
+        Ok(())
+    }
+
+    fn link_program(program_id : GLuint) -> Result<(), String> {
+        wrapper::link_program(program_id);
+
+        // TODO: glGetError check
+        Ok(())
+    }
+
+    pub fn is_valid_program_id(program_id : GLuint) -> bool {
+        match program_id {
+            0 => false,
+            _ => wrapper::is_program(program_id)
+        }
+    }
+
+    fn is_ready(&self) -> bool {
+        self.ready
+    }
+
+    pub fn add_shader(&mut self, shader: Shader) {
+        self.shader_collection.insert(shader.label.clone(), shader);
+        self.ready = false;
+    }
+
+    pub fn remove_shader(&mut self, name: &String) {
+        self.shader_collection.remove(name);
+        self.ready = false;
+    }
+
+    fn aux_create_program(&mut self) -> Result<(), String> {
+        let need_create_new_id = !self.can_reuse || !ShaderProgram::is_valid_program_id(self.program_id);
+
+        match need_create_new_id {
+            false => Ok(()),
+            true => match ShaderProgram::create_program() {
+                Ok(new_program_id) => {
+                    self.program_id = new_program_id;
+                    Ok(())
+                }
+                Err(error_desc) => Err(error_desc)
+            }
+        }
     }
 
     /// use current program
-    pub fn active(mut self) -> bool {
-        //        gl.UseProgram(name);
-        true
+    pub fn activate(&mut self) -> Result<(), String> {
+        if !self.ready {
+            for (shader_name, shader) in &mut self.shader_collection {
+                shader.compile()?;
+            }
+
+            self.aux_create_program()?;
+
+            // TODO: too simple too make below code a as method
+            ShaderProgram::link_program(self.program_id)?;
+
+            self.ready = true;
+        }
+
+        ShaderProgram::use_program(self.program_id)
     }
 
     /// reset to default program, namely program 0
-    pub fn inactive(mut self) -> bool {
-        //        gl.UseProgram(name);
-        true
+    pub fn deactivate(&mut self) -> Result<(), String> {
+        // TODO: 0 should be const and global
+        ShaderProgram::use_program(0)
     }
 
     #[inline]
@@ -157,8 +235,12 @@ impl ShaderProgram {
 impl Drop for ShaderProgram {
     #[inline]
     fn drop(&mut self) {
-        if self.initialized {
-            delete_program(self.program_id)
+        if self.ready {
+            ShaderProgram::delete_program(self.program_id);
+
+            // TODO: abstract as method
+            self.program_id = 0;
+            self.ready = false;
         }
     }
 }

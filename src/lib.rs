@@ -43,8 +43,8 @@ static SIMPLE_FRAGMENT: &'static str = "
 
 #[no_mangle]
 pub extern "C" fn init_triangle_program() {
-    let program = ShaderProgram::create_render_program(SIMPLE_VERTEX, SIMPLE_FRAGMENT);
-    program.link();
+    let mut program = ShaderProgram::create_shader_program(SIMPLE_VERTEX, SIMPLE_FRAGMENT);
+    program.activate();
 }
 
 //#[no_mangle]
