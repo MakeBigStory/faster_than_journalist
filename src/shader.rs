@@ -57,10 +57,25 @@ impl Shader {
         }
     }
 
+    pub fn attach_shader(program_id : GLuint, shader_id : GLuint) -> Result<(), String> {
+        wrapper::attach_shader(program_id, shader_id);
+
+        // TODO: glGetError check
+        Ok(())
+    }
+
+    pub fn detach_shader(program_id : GLuint, shader_id : GLuint) -> Result<(), String> {
+        wrapper::detach_shader(program_id, shader_id);
+
+        // TODO: glGetError check
+        Ok(())
+    }
+
     pub fn create_shader(shader_type: GLenum) -> Result<GLuint, String> {
         let shader_id = wrapper::create_shader(shader_type);
 
         // TODO: 和is_valid_shader有dup
+        // TODO: glGetError check
         match shader_id {
             0 => Err("Can not generate shader id".to_string()),
             _ => Ok(shader_id)
@@ -149,6 +164,14 @@ impl Shader {
     pub fn set_source(&mut self, new_source: String) {
         self.source = new_source;
         self.need_compile = true;
+    }
+
+    pub fn attach(&mut self, program_id : GLuint) -> Result<(), String> {
+        Shader::attach_shader(program_id, self.shader_id)
+    }
+
+    pub fn detach(&mut self, program_id : GLuint) -> Result<(), String> {
+        Shader::detach_shader(program_id, self.shader_id)
     }
 
     /// Compiles a shader.
