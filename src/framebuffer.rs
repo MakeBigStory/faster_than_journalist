@@ -3,6 +3,7 @@ use gles::es20::wrapper::*;
 
 use gles::es30::data_struct as es30d;
 
+use format::*;
 use renderbuffer::*;
 use std::error::Error;
 use std::fmt;
@@ -10,7 +11,6 @@ use std::fmt::Formatter;
 use std::mem;
 use std::ptr;
 use texture::*;
-use format::*;
 
 #[derive(Copy, Clone, Debug)]
 pub enum AttachmentType<'a> {
@@ -41,6 +41,13 @@ pub enum FrameBufferUsage {
     Read,
     Write,
     ReadWrite = GL_FRAMEBUFFER as isize,
+}
+
+struct Range2D<T> {
+    x: T,
+    y: T,
+    width: T,
+    height: T,
 }
 
 #[derive(Clone, Debug)]
@@ -136,7 +143,7 @@ impl<'a> FrameBuffer<'a> {
     }
 
     pub fn detach(&mut self, label: String) {
-        let mut index:i32 = -1;
+        let mut index: i32 = -1;
         {
             for (i, attach) in self.attachments.iter().enumerate() {
                 if attach.0.label == label {
@@ -155,10 +162,12 @@ impl<'a> FrameBuffer<'a> {
                         }
                         AttachmentType::RenderBufferAttachment(renderBuffer) => {
                             renderBuffer.bind();
-                            framebuffer_renderbuffer(self.usage as _,
-                                                     attach_usage,
-                                                     GL_RENDERBUFFER,
-                                                     0);
+                            framebuffer_renderbuffer(
+                                self.usage as _,
+                                attach_usage,
+                                GL_RENDERBUFFER,
+                                0,
+                            );
                             renderBuffer.unbind();
                         }
                     }
@@ -229,8 +238,15 @@ impl<'a> FrameBuffer<'a> {
     pub fn copy_sub_image(&self) {
         unimplemented!()
     }
-    pub fn read(&self) {
-        unimplemented!()
+
+    /// Read block of pixels from framebuffer to image
+    ///
+    /// # Arguments
+    ///
+    /// * `rectangle` - Framebuffer rectangle to read
+    /// * `image` - Image where to put the data
+    pub fn read(&self, rectangle: Range2D<i32>, image: Image2D) {
+//        read_pixels(rectangle.x, rectangle.y, rectangle.width, rectangle.height, image.type, image.buffer;)
     }
 }
 
@@ -238,7 +254,7 @@ impl<'a> Drop for FrameBuffer<'a> {
     #[inline]
     fn drop(&mut self) {
         if self.id != 0 {
-            delete_framebuffers(&[self.id]);
+            gl_delete_framebuffers(&[self.id]);
         }
     }
 }
