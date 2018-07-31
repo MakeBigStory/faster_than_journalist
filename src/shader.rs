@@ -30,7 +30,9 @@ pub struct Shader {
     ready: bool
 }
 
+// static method
 impl Shader {
+
     pub fn new(label: &str, shader_type: ShaderType, source: &str) -> Self {
         Shader {
             label : label.to_string(),
@@ -136,6 +138,10 @@ impl Shader {
             Err(_) => None
         }
     }
+}
+
+// instance method
+impl Shader {
 
     // TODO: 和静态的create_shader命名冲突，暂时加上aux前缀区分
     fn aux_create_shader(&mut self) -> Result<(), String> {

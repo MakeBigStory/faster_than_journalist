@@ -18,7 +18,9 @@ pub struct ShaderProgram {
     shader_collection: HashMap<String, Shader>
 }
 
+// static method
 impl ShaderProgram {
+
     #[inline]
     pub fn create_shader_program(vertex: &str, fragment: &str) -> Self {
         let mut program = ShaderProgram {
@@ -102,6 +104,18 @@ impl ShaderProgram {
             _ => wrapper::is_program(program_id)
         }
     }
+
+    //    fn get_attribute_location(&self, name: String) -> i32 {}
+    //    fn get_uniform_location(&self, name: String) -> i32 {}
+    //    fn get_uniform_block_index(&self, name: String) -> i32 {}
+
+    //    fn transform_feedback_varyings(&self, name: String) -> i32 {}
+    //    fn set_transform_feedback_outputs(&self, name: String) -> i32 {}
+    //    fn set_transform_feedback_mode(&self, mode: TransformFeedbackBufferMode) -> i32 {}
+}
+
+// instance method
+impl ShaderProgram {
 
     fn is_ready(&self) -> bool {
         self.ready
@@ -222,14 +236,6 @@ impl ShaderProgram {
         // todo: conditional compile
         //    glProgramParameteriEXT(_id, GL_PROGRAM_SEPARABLE_EXT, enabled ? GL_TRUE : GL_FALSE);
     }
-
-    //    fn get_attribute_location(&self, name: String) -> i32 {}
-    //    fn get_uniform_location(&self, name: String) -> i32 {}
-    //    fn get_uniform_block_index(&self, name: String) -> i32 {}
-
-    //    fn transform_feedback_varyings(&self, name: String) -> i32 {}
-    //    fn set_transform_feedback_outputs(&self, name: String) -> i32 {}
-    //    fn set_transform_feedback_mode(&self, mode: TransformFeedbackBufferMode) -> i32 {}
 }
 
 impl Drop for ShaderProgram {
