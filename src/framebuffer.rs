@@ -11,6 +11,7 @@ use std::fmt::Formatter;
 use std::mem;
 use std::ptr;
 use texture::*;
+use framebuffer::Range2D;
 
 #[derive(Copy, Clone, Debug)]
 pub enum AttachmentType<'a> {
@@ -78,6 +79,7 @@ pub(crate) struct FrameBuffer<'a> {
     pub label: String,
     pub status: FrameBufferStatus,
     pub id: u32,
+    pub viewport: Range2D<i32>,
     num: u32,
     usage: FrameBufferUsage,
     attachments: Vec<(Attachment<'a>, u32)>,
@@ -91,6 +93,7 @@ impl<'a> FrameBuffer<'a> {
             label,
             status: FrameBufferStatus::IncompleteAttachment,
             id,
+//            viewport: Range2D<i32>::new(),
             num: 0,
             usage: FrameBufferUsage::ReadWrite,
             attachments: Vec::new(),
@@ -112,12 +115,6 @@ impl<'a> FrameBuffer<'a> {
     #[inline]
     pub fn bind(&self) {
         bind_framebuffer(GL_FRAMEBUFFER, self.id);
-    }
-
-    // todo: deal with es 3.x
-    /// Max supported color attachment count
-    pub fn max_color_attachments(&self) -> i32 {
-        1 // ES 2.0 standard supports one color attachment only
     }
 
     pub fn check_status(&self) -> FrameBufferStatus {
@@ -301,6 +298,24 @@ impl<'a> FrameBuffer<'a> {
     /// * `image` - Image where to put the data
     pub fn read(&self, rectangle: Range2D<i32>, image: Image2D) {
         //        read_pixels(rectangle.x, rectangle.y, rectangle.width, rectangle.height, image.type, image.buffer;)
+    }
+}
+
+impl FrameBuffer {
+    /// Max supported viewport size
+    pub fn max_viewport_size() -> Vector2i {
+
+    }
+
+    /// Max supported draw buffer count
+    pub fn max_draw_buffers() -> i32 {
+
+    }
+
+    // todo: deal with es 3.x
+    /// Max supported color attachment count
+    pub fn max_color_attachments(&self) -> i32 {
+        1 // ES 2.0 standard supports one color attachment only
     }
 }
 
