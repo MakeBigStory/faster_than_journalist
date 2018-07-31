@@ -1,7 +1,7 @@
 use gles::es20::data_struct::*;
 use gles::es20::*;
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Hash)]
 pub enum ShaderType {
     Vertex = GL_VERTEX_SHADER as isize,
     Fragment = GL_FRAGMENT_SHADER as isize,
@@ -11,7 +11,7 @@ pub enum ShaderType {
 //    TessellationEvaluation,
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Hash)]
 pub enum ShaderLanguageVersion {
     Version100,
     Version300,
@@ -19,7 +19,7 @@ pub enum ShaderLanguageVersion {
     Version320,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Hash)]
 pub struct Shader {
     pub label: String,
     shader_type: ShaderType,
@@ -31,11 +31,11 @@ pub struct Shader {
 }
 
 impl Shader {
-    pub fn new(label: String, shader_type: ShaderType) -> Self {
+    pub fn new(label: &str, shader_type: ShaderType, source: &str) -> Self {
         Shader {
-            label,
+            label : label.to_string(),
             shader_type,
-            source: String::from(""),
+            source: source.to_string(),
             can_reuse: false,
             version: ShaderLanguageVersion::Version100,
             shader_id: 0,
@@ -161,24 +161,31 @@ impl Shader {
         }
     }
 
-    pub fn set_source(&mut self, new_source: String) {
-        self.source = new_source;
+    pub fn set_source(&mut self, new_source: &str) {
+        self.source = new_source.to_string();
         self.ready = true;
     }
 
     pub fn attach(&mut self, program_id : GLuint) -> Result<(), String> {
+        if !self.ready {
+            self.compile()?;
+        }
         Shader::attach_shader(program_id, self.shader_id)
     }
 
     pub fn detach(&mut self, program_id : GLuint) -> Result<(), String> {
-        Shader::detach_shader(program_id, self.shader_id)
+        if self.ready {
+            Shader::detach_shader(program_id, self.shader_id)
+        } else {
+            Ok(())
+        }
     }
 
     /// Compiles a shader.
     ///
     /// Returns a shader or a message with the error.
     pub fn compile(&mut self) -> Result<(), String> {
-        if !self.ready {
+        if self.ready {
             return Ok(())
         }
 
@@ -208,10 +215,13 @@ impl Shader {
 
 impl Drop for Shader {
     fn drop(&mut self) {
-        Shader::delete_shader(delete_shader).unwrap();
+        if self.ready {
+            Shader::delete_shader(self.shader_id).expect("delete shader error ....");
 
-        self.shader_id = 0;
-        self.ready = false;
+            // TODO: abstract as method
+            self.shader_id = 0;
+            self.ready = false;
+        }
     }
 }
     // Finds attribute location from a program.
