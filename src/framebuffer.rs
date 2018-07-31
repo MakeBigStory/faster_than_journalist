@@ -50,6 +50,8 @@ struct Range2D<T> {
     height: T,
 }
 
+enum FramebufferClearMask {}
+
 #[derive(Clone, Debug)]
 pub(crate) struct FrameBuffer<'a> {
     pub label: String,
@@ -220,18 +222,44 @@ impl<'a> FrameBuffer<'a> {
     fn set_viewport(&mut self) {
         unimplemented!()
     }
-    fn clear(&mut self) {
+
+    /// Clear specified buffers in framebuffer
+    ///
+    /// # Arguments
+    ///
+    /// * `mask` - Which buffers to clear
+    pub fn clear(&mut self, mask: FramebufferClearMask) -> () {
+        gl_clear(GLbitfield(mask));
+    }
+
+    /// Clear specified buffers in framebuffer
+    ///
+    /// # Arguments
+    ///
+    /// * `depth` - Value to clear with
+    pub fn clear_depth(&mut self, depth: f32) {
+        gl_clear_depth(GL_DEPTH_BITS, depth);
+    }
+
+    /// Clear stencil buffer to specified value
+    ///
+    /// # Arguments
+    ///
+    /// * `stencil` - Value to clear with
+    pub fn clear_stencil(&mut self, stencil: i32) {
+        //        glClearBufferiv(FramebufferTarget::Draw, 0, stencil)
+    }
+
+    /// Clear specified buffers in framebuffer
+    ///
+    /// # Arguments
+    ///
+    /// * `depth` - Value to clear with
+    /// * `stencil` - Value to clear with
+    pub fn clear_depth_stencil(&mut self, depth: f32, stencil: i32) {
         unimplemented!()
     }
-    fn clear_stencil(&mut self) {
-        unimplemented!()
-    }
-    fn clear_depth(&mut self) {
-        unimplemented!()
-    }
-    fn clear_depth_stencil(&mut self) {
-        unimplemented!()
-    }
+
     pub fn copy_image(&self) {
         unimplemented!()
     }
@@ -246,7 +274,7 @@ impl<'a> FrameBuffer<'a> {
     /// * `rectangle` - Framebuffer rectangle to read
     /// * `image` - Image where to put the data
     pub fn read(&self, rectangle: Range2D<i32>, image: Image2D) {
-//        read_pixels(rectangle.x, rectangle.y, rectangle.width, rectangle.height, image.type, image.buffer;)
+        //        read_pixels(rectangle.x, rectangle.y, rectangle.width, rectangle.height, image.type, image.buffer;)
     }
 }
 
