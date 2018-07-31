@@ -50,7 +50,15 @@ struct Range2D<T> {
     height: T,
 }
 
-enum FramebufferClearMask {}
+/// Mask for framebuffer clearing
+enum FramebufferClearMask {
+    /// Color buffer
+    Color = GL_COLOR_BUFFER_BIT,
+    /// Depth buffer
+    Depth = GL_DEPTH_BUFFER_BIT,
+    /// Stencil buffer
+    Stencil = GL_STENCIL_BUFFER_BIT,
+}
 
 #[derive(Clone, Debug)]
 pub(crate) struct FrameBuffer<'a> {
