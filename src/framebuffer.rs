@@ -60,6 +60,19 @@ enum FramebufferClearMask {
     Stencil = GL_STENCIL_BUFFER_BIT,
 }
 
+/// Invalidation attachment
+enum InvalidationAttachment {
+    /// Invalidate depth buffer
+    ///
+    /// GL_DEPTH_ATTACHMENT
+    Depth,
+
+    /// Invalidate stencil buffer
+    ///
+    /// GL_DEPTH_ATTACHMENT
+    Stencil,
+}
+
 #[derive(Clone, Debug)]
 pub(crate) struct FrameBuffer<'a> {
     pub label: String,
@@ -217,8 +230,12 @@ impl<'a> FrameBuffer<'a> {
     //todo: attachment 是不是只应该由framebuffer管理??s
     pub fn detach_batch(&mut self, attachments: &[Attachment]) {}
 
-    //Todo: invalidate ?
-    pub fn invalidate(&mut self) {}
+    /// Invalidate framebuffer
+    ///
+    /// # Arguments
+    ///
+    /// * `attachments` - Attachments to invalidate
+    pub fn invalidate(&mut self, attachments: &[InvalidationAttachment]) {}
 
     //todo: useless? when use state?
     fn attach_cube_map_texture(&mut self) {
