@@ -19,17 +19,15 @@ use format::*;
 /// Memory mapping access
 #[derive(Copy, Clone, Debug)]
 pub enum BufferUsage {
-/// Map buffer for reading only.
-ReadOnly = GL_READ_ONLY,
+    /// Map buffer for reading only.
+    ReadOnly = GL_READ_ONLY,
 
-/// Map buffer for writing only.
-WriteOnly = GL_WRITE_ONLY,
-// todo: conditional compile
-//WriteOnly = GL_WRITE_ONLY_OES
-
-
-/// Map buffer for both reading and writing.
-ReadWrite = GL_READ_WRITE,
+    /// Map buffer for writing only.
+    WriteOnly = GL_WRITE_ONLY,
+    // todo: conditional compile
+    //WriteOnly = GL_WRITE_ONLY_OES
+    /// Map buffer for both reading and writing.
+    ReadWrite = GL_READ_WRITE,
 }
 
 #[derive(Debug, Clone, Hash)]
