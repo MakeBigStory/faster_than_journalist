@@ -10,7 +10,7 @@ mod sampler;
 mod format;
 mod texture;
 mod color;
-mod attribute;
+pub mod attribute;
 mod attribute_layout;
 mod buffer;
 
@@ -71,7 +71,7 @@ pub mod android {
         env: JNIEnv,
         _: JClass,
     ) -> jlong {
-        trace!("{} create program .... ", LOG_TAG);
+        trace!("{} begin create .... ", LOG_TAG);
 
         let mut program = ShaderProgram::create_shader_program(SIMPLE_VERTEX, SIMPLE_FRAGMENT);
         program.activate();
@@ -81,6 +81,14 @@ pub mod android {
 
         let mut buffer = buffer::Buffer::new("test buffer");
         let bind_buffer_res = buffer.bind();
+
+        let mut attr_pos = attribute::Attribute::new("position", format::AttributeKind::FloatVec2);
+        let mut attr_uv = attribute::Attribute::new("uv", format::AttributeKind::FloatVec2);
+
+        let mut attribute_layout = attribute_layout::AttributeLayout::new();
+        attribute_layout.add_attribute(attr_pos);
+        attribute_layout.add_attribute(attr_uv);
+        attribute_layout.enable();
 
         if cfg!(target_os = "android") {
             android_logger::init_once(Filter::default()
@@ -99,7 +107,7 @@ pub mod android {
 
             trace!("{} program {:?} .... ", LOG_TAG, program);
             trace!("{} texture {:?} .... ", LOG_TAG, texture);
-            trace!("{} texture {:?} .... ", LOG_TAG, buffer);
+            trace!("{} buffer {:?} .... ", LOG_TAG, buffer);
         }
 
         0 as jlong
