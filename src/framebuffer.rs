@@ -108,29 +108,29 @@ impl<'a> FrameBuffer<'a> {
             let attach_usage = self.allocate_attachment_usage(attach);
             self.attachments.push((attach.clone(), attach_usage));
 
-            match attach.attachment_type {
-                AttachmentType::TextureAttachment(texture) => {
-                    texture.bind();
-                    framebuffer_texture_2d(
-                        self.usage as _,
-                        attach_usage,
-                        texture.desc.texture_type as _,
-                        texture.id,
-                        texture.desc.level as _,
-                    );
-                    texture.unbind();
-                }
-                AttachmentType::RenderBufferAttachment(renderBuffer) => {
-                    renderBuffer.bind();
-                    framebuffer_renderbuffer(
-                        self.usage as _,
-                        attach_usage,
-                        GL_RENDERBUFFER,
-                        renderBuffer.id,
-                    );
-                    renderBuffer.unbind();
-                }
-            }
+//            match attach.attachment_type {
+//                AttachmentType::TextureAttachment(ref mut texture) => {
+//                    texture.bind();
+//                    framebuffer_texture_2d(
+//                        self.usage as _,
+//                        attach_usage,
+//                        texture.texture_type as _,
+//                        texture.texture_id,
+//                        texture.level as _,
+//                    );
+//                    texture.unbind();
+//                }
+//                AttachmentType::RenderBufferAttachment(renderBuffer) => {
+//                    renderBuffer.bind();
+//                    framebuffer_renderbuffer(
+//                        self.usage as _,
+//                        attach_usage,
+//                        GL_RENDERBUFFER,
+//                        renderBuffer.id,
+//                    );
+//                    renderBuffer.unbind();
+//                }
+//            }
         }
         self.unbind();
     }
@@ -141,27 +141,27 @@ impl<'a> FrameBuffer<'a> {
             for (i, attach) in self.attachments.iter().enumerate() {
                 if attach.0.label == label {
                     let attach_usage = attach.1;
-                    match attach.0.attachment_type {
-                        AttachmentType::TextureAttachment(texture) => {
-                            texture.bind();
-                            framebuffer_texture_2d(
-                                self.usage as _,
-                                attach_usage,
-                                texture.desc.texture_type as _,
-                                0,
-                                0,
-                            );
-                            texture.unbind();
-                        }
-                        AttachmentType::RenderBufferAttachment(renderBuffer) => {
-                            renderBuffer.bind();
-                            framebuffer_renderbuffer(self.usage as _,
-                                                     attach_usage,
-                                                     GL_RENDERBUFFER,
-                                                     0);
-                            renderBuffer.unbind();
-                        }
-                    }
+//                    match attach.0.attachment_type {
+//                        AttachmentType::TextureAttachment(ref mut texture) => {
+//                            texture.bind();
+//                            framebuffer_texture_2d(
+//                                self.usage as _,
+//                                attach_usage,
+//                                texture.texture_type as _,
+//                                0,
+//                                0,
+//                            );
+//                            texture.unbind();
+//                        }
+//                        AttachmentType::RenderBufferAttachment(renderBuffer) => {
+//                            renderBuffer.bind();
+//                            framebuffer_renderbuffer(self.usage as _,
+//                                                     attach_usage,
+//                                                     GL_RENDERBUFFER,
+//                                                     0);
+//                            renderBuffer.unbind();
+//                        }
+//                    }
 
                     index = i as i32;
                     //self.attachments.remove(i);

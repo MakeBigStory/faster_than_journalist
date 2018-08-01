@@ -20,7 +20,7 @@ fn glenum_to_isize(value: es20d::GLenum) -> isize {
     value as isize
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum WrapMode {
     /// Repeat texture
     Repeat = es20d::GL_REPEAT as isize,
@@ -35,7 +35,7 @@ pub enum WrapMode {
 }
 
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum FilterMode {
     /// Nearest neighbor filtering.
     Nearest = es20d::GL_NEAREST as isize,

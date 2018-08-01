@@ -1,5 +1,3 @@
-
-
 use gles::es20::data_struct as es20d;
 use gles::es30::data_struct as es30d;
 use gles::es31::data_struct as es31d;
@@ -16,36 +14,36 @@ use std::fmt::Formatter;
 use std::error::Error;
 use std::mem;
 use std::ops::Range;
+
 use sampler::*;
 use format::*;
 
 // todo: 宽高为非2的n次方纹理的处理
 
-
 #[derive(Clone, Debug)]
 pub struct Swizzle {
-    R: SwizzleMode,
-    G: SwizzleMode,
-    B: SwizzleMode,
-    A: SwizzleMode,
+    r: SwizzleMode,
+    g: SwizzleMode,
+    b: SwizzleMode,
+    a: SwizzleMode
 }
 
 impl Swizzle {
-    fn new() -> Swizzle {
+    fn new() -> Self {
         Swizzle {
-            R: SwizzleMode::SwizzleR,
-            G: SwizzleMode::SwizzleG,
-            B: SwizzleMode::SwizzleB,
-            A: SwizzleMode::SwizzleA,
+            r: SwizzleMode::SwizzleR,
+            g: SwizzleMode::SwizzleG,
+            b: SwizzleMode::SwizzleB,
+            a: SwizzleMode::SwizzleA,
         }
     }
 
-    fn new_with(swizzle: &[SwizzleMode; 4]) -> Swizzle {
+    fn with(swizzle: &[SwizzleMode; 4]) -> Self {
         Swizzle {
-            R: swizzle[0].clone(),
-            G: swizzle[1].clone(),
-            B: swizzle[2].clone(),
-            A: swizzle[3].clone(),
+            r: swizzle[0],
+            g: swizzle[1],
+            b: swizzle[2],
+            a: swizzle[3]
         }
     }
 }
@@ -54,7 +52,7 @@ impl Swizzle {
 pub struct Extend<T> {
     pub width: T,
     pub height: T,
-    pub depth: T,
+    pub depth: T
 }
 
 impl<T> Extend<T> {
@@ -68,13 +66,161 @@ impl<T> Extend<T> {
 }
 
 #[derive(Clone, Debug)]
-pub struct TextureDesc {
+pub struct TextureState {
+    pub wrap_mode: Option<Wrap>,
+    pub filter_mode: Option<Filter>,
+    pub swizzle_mode: Option<Swizzle>
+}
+
+trait Apply {
+    fn apply(&mut self, target: TextureType) -> Result<(), String>;
+
+    fn apply_diff(&mut self, other: &mut Self, target: TextureType) -> Result<(), String>;
+}
+
+impl Apply for Wrap {
+    // TODO: error-check
+    fn apply(&mut self, target: TextureType) -> Result<(), String> {
+        es20::wrapper::tex_parameteri(target as _,
+                                      es20d::GL_TEXTURE_WRAP_S,
+                                      self.S as _);
+
+        es20::wrapper::tex_parameteri(target as _,
+                                      es20d::GL_TEXTURE_WRAP_T,
+                                      self.T as _);
+
+        Ok(())
+    }
+
+    // TODO: error-check
+    fn apply_diff(&mut self, other: &mut Self, target: TextureType) -> Result<(), String> {
+        if other.S != self.S {
+            es20::wrapper::tex_parameteri(target as _,
+                                          es20d::GL_TEXTURE_WRAP_S,
+                                          self.S as _);
+        }
+
+        if other.T != self.T {
+            es20::wrapper::tex_parameteri(target as _,
+                                          es20d::GL_TEXTURE_WRAP_T,
+                                          self.T as _);
+        }
+
+        Ok(())
+    }
+}
+
+impl Apply for Filter {
+    // TODO: error-check
+    fn apply(&mut self, target: TextureType) -> Result<(), String> {
+        es20::wrapper::tex_parameteri(target as _,
+                                      es20d::GL_TEXTURE_MIN_FILTER,
+                                      self.min as _);
+
+        es20::wrapper::tex_parameteri(target as _,
+                                      es20d::GL_TEXTURE_MAG_FILTER,
+                                      self.mag as _);
+
+        Ok(())
+    }
+
+    // TODO: error-check
+    fn apply_diff(&mut self, other: &mut Self, target: TextureType) -> Result<(), String> {
+        if self.min != other.min {
+            es20::wrapper::tex_parameteri(target as _,
+                                          es20d::GL_TEXTURE_MIN_FILTER,
+                                          self.min as _);
+        }
+
+        if self.mag != other.mag {
+            es20::wrapper::tex_parameteri(target as _,
+                                          es20d::GL_TEXTURE_MAG_FILTER,
+                                          self.mag as _);
+        }
+
+        Ok(())
+    }
+}
+
+impl Apply for Swizzle {
+    // TODO: es30暂时不支持
+    fn apply(&mut self, target: TextureType) -> Result<(), String> {
+        Ok(())
+    }
+
+    fn apply_diff(&mut self, other: &mut Self, target: TextureType) -> Result<(), String> {
+        Ok(())
+    }
+}
+
+impl TextureState {
+    fn apply(&mut self, target: TextureType) -> Result<(), String> {
+        match self.filter_mode {
+            Some(ref mut filter_mode) => filter_mode.apply(target),
+            // TODO: 暂时这样
+            None => Ok(())
+        }?;
+
+        match self.wrap_mode {
+            Some(ref mut wrap_mode) => wrap_mode.apply(target),
+            // TODO: 暂时这样
+            None => Ok(())
+        }
+    }
+
+    fn apply_diff(&mut self, old_texture_state : &mut TextureState, target: TextureType) -> Result<(), String> {
+        match self.filter_mode {
+            Some(ref mut filter_mode) => {
+                match old_texture_state.filter_mode {
+                    Some(ref mut old_filter_mode) => filter_mode.apply_diff(old_filter_mode, target),
+                    None => filter_mode.apply(target)
+                }
+            }
+
+            // Nothing, no op
+            None => {
+                Ok(())
+            }
+        }?;
+
+        match self.wrap_mode {
+            Some(ref mut wrap_mode) => {
+                match old_texture_state.wrap_mode {
+                    Some(ref mut old_wrap_mode) => wrap_mode.apply_diff(old_wrap_mode, target),
+                    None => wrap_mode.apply(target)
+                }
+            }
+            // Nothing, no op
+            None => {
+                Ok(())
+            }
+        }
+    }
+}
+
+impl Default for TextureState {
+    fn default() -> Self {
+        TextureState {
+            wrap_mode: None,
+            filter_mode: None,
+            swizzle_mode: None,
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct Texture {
     pub label: String,
+
+    pub texture_id: u32,
+    pub use_swizzle: bool,
+    pub use_sampler: bool,
+    mipmap_ready: bool,
+    staging_texture_state: TextureState,
+    active_texture_state: TextureState,
+
     pub texture_type: TextureType,
-    pub wrap: Wrap,
-    pub filter: Filter,
-    pub swizzle: Swizzle,
-    pub use_mip_map: bool,
+    pub use_mipmap: bool,
     pub level: u32,
     pub size: Extend<u32>,
     pub board_size: u32,
@@ -83,199 +229,110 @@ pub struct TextureDesc {
     //Todo: 支持多重采样的纹理以及压缩纹理
     pub support_multiple_sampler: bool,
     pub support_compress: bool,
-}
-
-impl TextureDesc {
-    pub fn new(label: String, size: Extend<u32>) -> TextureDesc {
-        TextureDesc {
-            label,
-            texture_type: TextureType::Texture2d,
-            wrap: Wrap::new(),
-            filter: Filter::new(),
-            swizzle: Swizzle::new(),
-            use_mip_map: false,
-            level: 0,
-            size,
-            board_size: 0,
-            format: DataFormat::RGBA,
-            support_multiple_sampler: false,
-            support_compress: false,
-        }
-    }
-
-    pub fn new_with(label: String, wrap: Wrap, filter: Filter,
-                    texture_type: TextureType, size: Extend<u32>)
-                    -> TextureDesc {
-        TextureDesc {
-            label,
-            texture_type,
-            wrap,
-            filter: Filter::new(),
-            swizzle: Swizzle::new(),
-            use_mip_map: false,
-            level: 0,
-            size,
-            board_size: 0,
-            format: DataFormat::RGBA,
-            support_multiple_sampler: false,
-            support_compress: false,
-        }
-    }
-
-    fn set_label(&mut self, label: String) {
-        self.label = label;
-    }
-
-    fn get_label(&self) -> &String {
-        &self.label
-    }
-
-    fn set_texture_type(&mut self, texture_type: TextureType) {
-        self.texture_type = texture_type;
-    }
-
-    fn set_wrap(&mut self, wrap: Wrap) {
-        self.wrap = wrap;
-    }
-
-    fn set_filter(&mut self, filter: Filter) {
-        self.filter = filter;
-    }
-
-    fn set_swizzle(&mut self, swizzle: Swizzle) {
-        self.swizzle = swizzle;
-    }
-
-    fn use_mip_map(&mut self, flag: bool) {
-        self.use_mip_map = flag;
-    }
-
-    fn set_level(&mut self, level: u32) {
-        self.level = level;
-    }
-
-    fn set_size(&mut self, size: Extend<u32>) {
-        self.size = size;
-    }
-
-    fn set_board_size(&mut self, board_size: u32) {
-        self.board_size = board_size;
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct Texture {
-    pub desc: TextureDesc,
-    pub id: u32,
-    pub use_swizzle: bool,
-    pub use_sampler: bool,
 
     current_out_pixel_type: DataKind,
-    current_out_pixel_format: DataFormat,
+
+    ready: bool
 }
 
-
 impl Texture {
-    pub fn new(desc: &TextureDesc) -> Texture {
-        let raw = es20::wrapper::gen_textures(1)[0];
-        let target = desc.texture_type as es20d::GLenum;
 
-        es20::wrapper::bind_texture(target as _, raw);
-        es20::wrapper::tex_parameteri(target as _,
-                                      es20d::GL_TEXTURE_WRAP_S,
-                                      desc.wrap.S as _);
-
-        es20::wrapper::tex_parameteri(target as _,
-                                      es20d::GL_TEXTURE_WRAP_T,
-                                      desc.wrap.T as _);
-        es20::wrapper::tex_parameteri(target as _,
-                                      es20d::GL_TEXTURE_MAG_FILTER,
-                                      desc.filter.min as _);
-        es20::wrapper::tex_parameteri(target as _,
-                                      es20d::GL_TEXTURE_MIN_FILTER,
-                                      desc.filter.mag as _);
-        es20::wrapper::bind_texture(desc.texture_type as _, 0);
-
+    pub fn new(label: &str, size: Extend<u32>) -> Self {
         Texture {
-            desc: desc.clone(),
-            id: raw,
+            label: label.to_string(),
+
+            texture_id: 0,
+            texture_type: TextureType::Texture2d,
+
             use_swizzle: false,
             use_sampler: false,
 
-            current_out_pixel_format: DataFormat::RGBA,
+            mipmap_ready: false,
+            use_mipmap: false,
+
+            staging_texture_state: TextureState::default(),
+            active_texture_state: TextureState::default(),
+
             current_out_pixel_type: DataKind::UnsignedByte,
+
+            level: 0,
+            size,
+            board_size: 0,
+            format: DataFormat::RGBA,
+
+            support_multiple_sampler: false,
+            support_compress: false,
+
+            ready: false
         }
     }
 
-
-    pub fn new_with(desc: &TextureDesc, use_swizzel: bool) -> Texture {
-        let raw = es20::wrapper::gen_textures(1)[0];
-        let target = desc.texture_type as es20d::GLenum;
-
-        es20::wrapper::bind_texture(target as _, raw);
-        es20::wrapper::tex_parameteri(target as _,
-                                      es20d::GL_TEXTURE_WRAP_S,
-                                      desc.wrap.S as _);
-
-        es20::wrapper::tex_parameteri(target as _,
-                                      es20d::GL_TEXTURE_WRAP_T,
-                                      desc.wrap.T as _);
-        es20::wrapper::tex_parameteri(target as _,
-                                      es20d::GL_TEXTURE_MAG_FILTER,
-                                      desc.filter.min as _);
-        es20::wrapper::tex_parameteri(target as _,
-                                      es20d::GL_TEXTURE_MIN_FILTER,
-                                      desc.filter.mag as _);
-
-        //version 30 operation:
-        /* unsafe {
-             es20::wrapper::tex_parameteri(target as _,
-                                           es30d::GL_TEXTURE_SWIZZLE_R,
-                                           desc.swizzle.R as es20d::GLenum);
-
-             es20::wrapper::tex_parameteri(target as _,
-                                           es30d::GL_TEXTURE_SWIZZLE_G,
-                                           desc.swizzle.G as es20d::GLenum);
-
-             es20::wrapper::tex_parameteri(target as _,
-                                           es30d::GL_TEXTURE_SWIZZLE_B,
-                                           desc.swizzle.B as es20d::GLenum);
-             es20::wrapper::tex_parameteri(target as _,
-                                           es30d::GL_TEXTURE_SWIZZLE_A,
-                                           desc.swizzle.A as es20d::GLenum);
-         }
-         */
-
-        es20::wrapper::bind_texture(desc.texture_type as _, 0);
-
-        Texture {
-            desc: desc.clone(),
-            id: raw,
-            use_swizzle: false,
-            use_sampler: false,
-
-            current_out_pixel_format: DataFormat::RGBA,
-            current_out_pixel_type: DataKind::UnsignedByte,
-        }
+    fn set_data_format(&mut self, data_format: DataFormat) ->&mut Self {
+        self.format = data_format;
+        self
     }
 
-    pub fn set_minification_filter(&mut self, filter: FilterMode) {
-        self.bind();
-        self.desc.filter.min = filter;
-        es20::wrapper::tex_parameteri(self.desc.texture_type as _,
-                                      es20d::GL_TEXTURE_MAG_FILTER,
-                                      self.desc.filter.min as _);
-        self.unbind();
+    fn set_texture_type(&mut self, texture_type: TextureType) -> &mut Self {
+        self.texture_type = texture_type;
+        self
     }
 
-    pub fn set_magnification_filter(&mut self, filter: FilterMode) {
-        self.bind();
-        self.desc.filter.mag = filter;
-        es20::wrapper::tex_parameteri(self.desc.texture_type as _,
-                                      es20d::GL_TEXTURE_MAG_FILTER,
-                                      self.desc.filter.mag as _);
-        self.unbind();
+    fn set_wrap(&mut self, wrap: Wrap) -> &mut Self {
+        self.staging_texture_state.wrap_mode = Option::Some(wrap);
+        self
     }
+
+    fn set_filter(&mut self, filter: Filter) -> &mut Self {
+        self.staging_texture_state.filter_mode = Option::Some(filter);
+        self
+    }
+
+    fn set_swizzle(&mut self, swizzle: Swizzle) -> &mut Self {
+        self.staging_texture_state.swizzle_mode = Option::Some(swizzle);
+        self
+    }
+
+    fn use_mipmap(&mut self, use_mipmap: bool) -> &mut Self {
+        self.use_mipmap = use_mipmap;
+        self
+    }
+
+    fn set_level(&mut self, level: u32) -> &mut Self {
+        self.level = level;
+        self
+    }
+
+    fn set_size(&mut self, size: Extend<u32>) -> &mut Self {
+        self.size = size;
+        self
+    }
+
+    fn set_board_size(&mut self, board_size: u32) -> &mut Self {
+        self.board_size = board_size;
+        self
+    }
+
+    // TODO: 暂时隐蔽这两个细化接口
+//    pub fn set_min_filter(&mut self, min_filter_mode: FilterMode) -> &mut self {
+//        match self.staging_texture_state.filter_mode {
+//            Some(filter_mode) => filter_mode.min = min_filter_mode,
+//            None => self.staging_texture_state.filter_mode = Option::Some(filter)
+//        }
+//
+//        self
+//    }
+//
+//    pub fn set_mag_filter(&mut self, filter_mode: FilterMode) -> &mut self {
+////        self.bind();
+//        self.staging_texture_state.filter_mode.mag = filter_mode;
+//
+//        match self.staging_texture_state.filter_mode {
+//            Some(filter_mode) => filter_mode.min = min_filter_mode,
+//            None =>
+//        }
+//
+//        self
+//    }
 
     pub fn set_min_lod(&mut self, lod: u32) {
         // TODO; Sampler Object Property
@@ -286,63 +343,59 @@ impl Texture {
     pub fn set_lod_bias(&mut self, lod_bias: f32) {
         //TODO:
     }
-    pub fn set_wrap(&mut self, wrap: Wrap) {
-        self.bind();
-        self.desc.wrap = wrap.clone();
-        es20::wrapper::tex_parameteri(self.desc.texture_type as _,
-                                      es20d::GL_TEXTURE_WRAP_S,
-                                      wrap.S as _);
-
-        es20::wrapper::tex_parameteri(self.desc.texture_type as _,
-                                      es20d::GL_TEXTURE_WRAP_T,
-                                      wrap.T as _);
-        self.unbind();
-    }
 
     pub fn set_max_anisotropy(&mut self) {
         //TODO: Sampler Object Property
     }
-    pub fn set_image<T>(&mut self, pixel_format: DataFormat,
+    pub fn set_data<T>(&mut self, pixel_format: DataFormat,
                         data: &[T], pixel_type: DataKind) {
 
         self.current_out_pixel_type = pixel_type;
-        self.current_out_pixel_format = pixel_format;
+        self.format = pixel_format;
 
         self.bind();
-        es20::wrapper::tex_image_2d(self.desc.texture_type as _,
-                                    self.desc.level as _,
-                                    self.desc.format as _,
-                                    self.desc.size.width as _,
-                                    self.desc.size.height as _,
-                                    self.desc.board_size as _,
-                                    pixel_format as _,
+
+        es20::wrapper::tex_image_2d(self.texture_type as _,
+                                    self.level as _,
+                                    self.format as _,
+                                    self.size.width as _,
+                                    self.size.height as _,
+                                    self.board_size as _,
+                                    self.format as _,
                                     pixel_type as _,
                                     data,
         );
 
-        if self.desc.use_mip_map {
-            es20::wrapper::generate_mipmap(self.desc.texture_type as _);
+        self.mipmap_ready = false;
+
+        if self.use_mipmap {
+            self.generate_mipmap();
         }
+
         self.unbind();
     }
-    pub fn set_sub_image<T>(&mut self,
+    pub fn update_data<T>(&mut self,
                          offset_x: u32, offset_y: u32,
                         width: u32, height: u32, data: &[T]) {
         self.bind();
-        es20::wrapper::tex_sub_image_2d(self.desc.texture_type as _,
-                                    self.desc.level as _,
+
+        es20::wrapper::tex_sub_image_2d(self.texture_type as _,
+                                    self.level as _,
                                     offset_x as _,
                                     offset_y as _,
                                     width as _,
                                     height as _,
-                                    self.current_out_pixel_format as _,
+                                    self.format as _,
                                     self.current_out_pixel_type as _,
                                     data,
         );
 
-        if self.desc.use_mip_map {
-            es20::wrapper::generate_mipmap(self.desc.texture_type as _);
+        self.mipmap_ready = false;
+
+        if self.use_mipmap {
+            self.generate_mipmap();
         }
+
         self.unbind();
     }
 
@@ -370,34 +423,70 @@ impl Texture {
 //        self.unbind();
     }
 
-    pub fn generate_mipmap(&self) {
-        self.bind();
-        if self.desc.use_mip_map {
-            es20::wrapper::generate_mipmap(self.desc.texture_type as _);
+    // TODO: bind和unbind由调用者来保证，是否可以维护一个bound flag?
+    pub fn generate_mipmap(&mut self) {
+        if !self.mipmap_ready {
+            es20::wrapper::generate_mipmap(self.texture_type as _);
+            self.mipmap_ready = true
         }
-        self.unbind();
     }
 
-    pub fn use_sampler(&mut self, flag: bool) {
-        self.use_sampler = flag;
+    pub fn active(&mut self, texture_slot : es20d::GLenum) -> Result<(), String> {
+        es20::wrapper::active_texture(texture_slot);
+
+        self.bind()
     }
 
-    pub fn use_swizzle(&mut self, flag: bool) {
-        self.use_swizzle = flag;
+    pub fn use_sampler(&mut self, use_sampler: bool) {
+        self.use_sampler = use_sampler;
+    }
+
+    pub fn use_swizzle(&mut self, use_swizzle: bool) {
+        self.use_swizzle = use_swizzle;
+    }
+
+    fn create_texture(&mut self) -> Result<(), String> {
+        if self.ready {
+            return Ok(())
+        }
+
+        let texture_id = es20::wrapper::gen_textures(1)[0];
+
+        match texture_id {
+            0 => Err("Generate invalid texture id 0 !!!".to_string()),
+            texture_id => {
+                    self.texture_id = texture_id;
+                    Ok(())
+                }
+            }?;
+
+        self.ready = true;
+
+        Ok(())
     }
 
     #[inline]
-    pub fn bind(&self) {
-        unsafe {
-            es20::ffi::glBindTexture(self.desc.texture_type as _, self.id);
+    pub fn bind(&mut self) -> Result<(), String> {
+        if !self.ready {
+            self.create_texture()?;
         }
+
+        es20::wrapper::bind_texture(self.texture_type as u32, self.texture_id);
+
+        self.staging_texture_state.apply_diff(&mut self.active_texture_state, self.texture_type)?;
+        // TODO: 性能，需要加一个flag
+        self.active_texture_state = self.staging_texture_state.clone();
+
+        // TODO: check result
+        Ok(())
     }
 
     #[inline]
-    pub fn unbind(&self) {
-        unsafe {
-            es20::ffi::glBindTexture(self.desc.texture_type as _, 0);
-        }
+    pub fn unbind(&self) -> Result<(), String> {
+        es20::wrapper::bind_texture(self.texture_type as u32, 0);
+
+        // TODO: check result
+        Ok(())
     }
 
 //    #[inline(always)]
@@ -433,7 +522,11 @@ impl Texture {
 
 impl Drop for Texture {
     fn drop(&mut self) {
-        es20::wrapper::delete_textures(&[self.id]);
-        self.id = 0;
+        if self.ready {
+            es20::wrapper::delete_textures(&[self.texture_id]);
+
+            self.texture_id = 0;
+            self.ready = false;
+        }
     }
 }
