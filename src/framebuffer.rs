@@ -37,9 +37,8 @@ impl<'a> Attachment<'a> {
 
 #[derive(Copy, Clone, Debug)]
 pub enum FrameBufferUsage {
-    //todo:
-    Read,
-    Write,
+    Read = GL_DRAW_FRAMEBUFFER as isize,
+    Write = GL_READ_FRAMEBUFFER as isize,
     ReadWrite = GL_FRAMEBUFFER as isize,
 }
 
@@ -130,7 +129,7 @@ impl<'a> FrameBuffer<'a> {
 
     pub fn check_status(&self) -> FrameBufferStatus {
         //todo : 原来的有30或者31的，对不上号，改了。
-        match check_framebuffer_status(self.usage as _) {
+        match gl_check_framebuffer_status(self.usage as _) {
             GL_FRAMEBUFFER_COMPLETE => FrameBufferStatus::Complete,
             GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT => FrameBufferStatus::IncompleteAttachment,
             GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT => {
