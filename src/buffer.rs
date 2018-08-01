@@ -8,13 +8,29 @@ use gles::es30;
 use gles::es31;
 use gles::es32;
 
-use std::ptr;
+use std::error::Error;
 use std::fmt;
 use std::fmt::Formatter;
-use std::error::Error;
 use std::mem;
+use std::ptr;
 
 use format::*;
+
+/// Memory mapping access
+#[derive(Copy, Clone, Debug)]
+pub enum BufferUsage {
+/// Map buffer for reading only.
+ReadOnly = GL_READ_ONLY,
+
+/// Map buffer for writing only.
+WriteOnly = GL_WRITE_ONLY,
+// todo: conditional compile
+//WriteOnly = GL_WRITE_ONLY_OES
+
+
+/// Map buffer for both reading and writing.
+ReadWrite = GL_READ_WRITE,
+}
 
 #[derive(Debug, Clone, Hash)]
 pub struct BufferDesc {
@@ -27,9 +43,14 @@ pub struct BufferDesc {
 }
 
 impl BufferDesc {
-    fn new(label: String, target: BufferType, usage: BufferUsage, size: u32,
-           kind: DataKind, stride:u32)
-           -> BufferDesc {
+    fn new(
+        label: String,
+        target: BufferType,
+        usage: BufferUsage,
+        size: u32,
+        kind: DataKind,
+        stride: u32,
+    ) -> BufferDesc {
         BufferDesc {
             label,
             target,
@@ -55,20 +76,14 @@ pub struct Buffer {
     pub raw: Option<u32>,
 }
 
-impl PartialEq for Buffer{
+impl PartialEq for Buffer {
     fn eq(&self, other: &Buffer) -> bool {
         match self.raw {
-            Some(id) => {
-                match other.raw {
-                    Some(other_id) => {
-                        id == other_id
-                    },
-                    None=>{
-                        false
-                    }
-                }
+            Some(id) => match other.raw {
+                Some(other_id) => id == other_id,
+                None => false,
             },
-            None=>{false}
+            None => false,
         }
     }
 }
@@ -76,40 +91,42 @@ impl PartialEq for Buffer{
 impl Buffer {
     //if allocate a buffer without size, we will get size when write data automatically
     pub fn new(desc: &BufferDesc) -> Self {
-        let raw = es20::wrapper::gen_buffers(1)[0];
+        let raw = gl_gen_buffers(1)[0];
 
         let target = desc.target.clone() as es20d::GLenum;
         let usage = desc.usage as u32;
 
-        es20::wrapper::bind_buffer(target, raw);
-        es20::wrapper::buffer_data(target,
-                                   desc.size as es20d::GLsizeiptr,
-                                   ptr::null(),
-                                   usage);
-        es20::wrapper::bind_buffer(target, 0);
+        gl_bind_buffer(target, raw);
+        gl_buffer_data(target, desc.size as es20d::GLsizeiptr, ptr::null(), usage);
+        gl_bind_buffer(target, 0);
 
         Buffer {
             desc: desc.clone(),
-            raw: Some(raw)
+            raw: Some(raw),
         }
     }
 
     pub fn new_with_data<T>(name: String, desc: &BufferDesc, data: &[T]) -> Buffer {
-        let raw = es20::wrapper::gen_buffers(1)[0];
+        let raw = gl_gen_buffers(1)[0];
         let target = desc.target as u32;
         let usage = desc.usage as u32;
 
-        let real_size =  data.len() as usize * mem::size_of::<T>();
+        let real_size = data.len() as usize * mem::size_of::<T>();
         if real_size != desc.size as usize {
-            panic!("Buffer::new_with_data: data bytes greater than  GPUMemory size {:?}", desc);
+            panic!(
+                "Buffer::new_with_data: data bytes greater than  GPUMemory size {:?}",
+                desc
+            );
         }
 
-        es20::wrapper::bind_buffer(target, raw);
-        es20::wrapper::buffer_data(target,
-                                   desc.size as es20d::GLsizeiptr,
-                                   data.as_ptr() as * const es20d::GLvoid,
-                                   usage);
-        es20::wrapper::bind_buffer(target, 0);
+        gl_bind_buffer(target, raw);
+        gl_buffer_data(
+            target,
+            desc.size as es20d::GLsizeiptr,
+            data.as_ptr() as *const es20d::GLvoid,
+            usage,
+        );
+        gl_bind_buffer(target, 0);
 
         Buffer {
             desc: desc.clone(),
@@ -118,37 +135,46 @@ impl Buffer {
     }
 
     //todo: CPU data unpack to GPU,高版本或许可以使用mapbufferRange来实现高速资源拷贝
-    pub fn write_sub_buffer_data<T>(&self, offset: u32, size: u32, data :&[T])
-        -> Option<&Buffer> {
+    pub fn write_sub_buffer_data<T>(&self, offset: u32, size: u32, data: &[T]) -> Option<&Buffer> {
         if self.desc.size == 0 {
-            eprintln!("Buffer::write_data: hasn't been allocate a GPUMemory {:?}", self);
+            eprintln!(
+                "Buffer::write_data: hasn't been allocate a GPUMemory {:?}",
+                self
+            );
             return None;
         }
 
         let mut real_size = size;
         if (offset + size) > self.desc.size {
-            eprintln!("Buffer::write_data: override GPUMemory {:?}, do clamp Operation", self.desc);
+            eprintln!(
+                "Buffer::write_data: override GPUMemory {:?}, do clamp Operation",
+                self.desc
+            );
             real_size = &self.desc.size - offset;
         }
 
         let target = self.desc.target as u32;
         self.bind();
-        es20::wrapper::buffer_sub_data(target,
-                                       offset as _,
-                                       real_size as _,
-                                       data.as_ptr() as *const es20d::GLvoid);
+        gl_buffer_sub_data(
+            target,
+            offset as _,
+            real_size as _,
+            data.as_ptr() as *const es20d::GLvoid,
+        );
         self.unbind();
         Some(&self)
     }
 
-    fn bind(&self){
+    pub fn bind(&self) -> &Self {
         let target = self.desc.target as u32;
-        es20::wrapper::bind_buffer(target, self.raw.unwrap());
+        gl_bind_buffer(target, self.raw.unwrap());
+        self
     }
 
-    fn unbind(&self){
+    pub fn unbind(&self) -> &Self {
         let target = self.desc.target as u32;
-        es20::wrapper::bind_buffer(target, 0);
+        gl_bind_buffer(target, 0);
+        self
     }
 }
 
@@ -156,9 +182,9 @@ impl Drop for Buffer {
     fn drop(&mut self) {
         match self.raw {
             Some(id) => {
-                es20::wrapper::delete_buffers(&[id]);
+                gl_delete_buffers(&[id]);
                 self.raw = None;
-            },
+            }
             _ => {}
         }
     }
