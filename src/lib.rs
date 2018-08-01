@@ -6,6 +6,11 @@ pub use self::shader_program::*;
 pub mod shader;
 pub mod shader_program;
 
+mod sampler;
+mod format;
+mod texture;
+mod color;
+
 static SIMPLE_VERTEX_DATA: [f32; 16] = [
     //   position     uv
     1f32,  1f32,   1f32, 1f32,
@@ -68,12 +73,21 @@ pub mod android {
         let mut program = ShaderProgram::create_shader_program(SIMPLE_VERTEX, SIMPLE_FRAGMENT);
         program.activate();
 
+        let mut texture = texture::Texture::new("test texture", texture::Extend::new(1024, 768, 8));
+        let bind_res = texture.bind();
+
         if cfg!(target_os = "android") {
             android_logger::init_once(Filter::default()
                 .with_min_level(Level::Trace));
             trace!("{} android logger init .... ", LOG_TAG);
 
+            match bind_res {
+                Ok(_) => trace!("{} texture bind OK .... ", LOG_TAG),
+                Err(error_desc) => trace!("{} texture bind fail {} .... ", LOG_TAG, error_desc)
+            }
+
             trace!("{} program {:?} .... ", LOG_TAG, program);
+            trace!("{} texture {:?} .... ", LOG_TAG, texture);
         }
 
         0 as jlong
