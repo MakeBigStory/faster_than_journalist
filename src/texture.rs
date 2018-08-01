@@ -452,6 +452,7 @@ impl Texture {
 
         let texture_id = es20::wrapper::gen_textures(1)[0];
 
+        // TODO: glIsTexture检测
         match texture_id {
             0 => Err("Generate invalid texture id 0 !!!".to_string()),
             texture_id => {
