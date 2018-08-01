@@ -117,13 +117,15 @@ impl<'a> FrameBuffer<'a> {
     }
 
     #[inline]
-    pub fn unbind(&self) {
-        bind_framebuffer(GL_FRAMEBUFFER, 0);
+    pub fn unbind(&self) -> &Self {
+        gl_bind_framebuffer(GL_FRAMEBUFFER, 0);
+        self
     }
 
     #[inline]
-    pub fn bind(&self) {
-        bind_framebuffer(GL_FRAMEBUFFER, self.id);
+    pub fn bind(&self)  -> &Self {
+        gl_bind_framebuffer(GL_FRAMEBUFFER, self.id);
+        self
     }
 
     pub fn check_status(&self) -> FrameBufferStatus {
