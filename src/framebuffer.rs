@@ -150,7 +150,7 @@ impl<'a> FrameBuffer<'a> {
             match attach.attachment_type {
                 AttachmentType::TextureAttachment(texture) => {
                     texture.bind();
-                    framebuffer_texture_2d(
+                    gl_framebuffer_texture_2d(
                         self.usage as _,
                         attach_usage,
                         texture.desc.texture_type as _,
@@ -161,7 +161,7 @@ impl<'a> FrameBuffer<'a> {
                 }
                 AttachmentType::RenderBufferAttachment(renderBuffer) => {
                     renderBuffer.bind();
-                    framebuffer_renderbuffer(
+                    gl_framebuffer_renderbuffer(
                         self.usage as _,
                         attach_usage,
                         GL_RENDERBUFFER,
