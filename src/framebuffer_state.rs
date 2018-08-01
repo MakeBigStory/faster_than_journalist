@@ -1,0 +1,7 @@
+struct FramebufferState {
+
+}
+
+impl FramebufferState {
+
+}

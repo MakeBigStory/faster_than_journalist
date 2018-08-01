@@ -1,0 +1,7 @@
+struct ShaderState {
+
+}
+
+impl ShaderState {
+
+}

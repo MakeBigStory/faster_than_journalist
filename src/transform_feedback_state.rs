@@ -1,0 +1,7 @@
+struct TransformFeedbackState {
+
+}
+
+impl TransformFeedbackState {
+
+}

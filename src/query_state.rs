@@ -1,0 +1,7 @@
+struct QueryState {
+
+}
+
+impl QueryState {
+
+}
