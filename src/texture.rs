@@ -1,5 +1,3 @@
-
-
 use gles::es20::data_struct as es20d;
 use gles::es30::data_struct as es30d;
 use gles::es31::data_struct as es31d;
@@ -10,17 +8,16 @@ use gles::es30;
 use gles::es31;
 use gles::es32;
 
-use std::ptr;
+use format::*;
+use sampler::*;
+use std::error::Error;
 use std::fmt;
 use std::fmt::Formatter;
-use std::error::Error;
 use std::mem;
 use std::ops::Range;
-use sampler::*;
-use format::*;
+use std::ptr;
 
 // todo: 宽高为非2的n次方纹理的处理
-
 
 #[derive(Clone, Debug)]
 pub struct Swizzle {
@@ -103,9 +100,13 @@ impl TextureDesc {
         }
     }
 
-    pub fn new_with(label: String, wrap: Wrap, filter: Filter,
-                    texture_type: TextureType, size: Extend<u32>)
-                    -> TextureDesc {
+    pub fn new_with(
+        label: String,
+        wrap: Wrap,
+        filter: Filter,
+        texture_type: TextureType,
+        size: Extend<u32>,
+    ) -> TextureDesc {
         TextureDesc {
             label,
             texture_type,
@@ -120,14 +121,6 @@ impl TextureDesc {
             support_multiple_sampler: false,
             support_compress: false,
         }
-    }
-
-    fn set_label(&mut self, label: String) {
-        self.label = label;
-    }
-
-    fn get_label(&self) -> &String {
-        &self.label
     }
 
     fn set_texture_type(&mut self, texture_type: TextureType) {
@@ -174,27 +167,26 @@ pub struct Texture {
     current_out_pixel_format: DataFormat,
 }
 
-
 impl Texture {
     pub fn new(desc: &TextureDesc) -> Texture {
-        let raw = es20::wrapper::gen_textures(1)[0];
+        let raw = gl_gen_textures(1)[0];
         let target = desc.texture_type as es20d::GLenum;
 
-        es20::wrapper::bind_texture(target as _, raw);
-        es20::wrapper::tex_parameteri(target as _,
-                                      es20d::GL_TEXTURE_WRAP_S,
-                                      desc.wrap.S as _);
+        gl_bind_texture(target as _, raw);
+        gl_tex_parameteri(target as _, es20d::GL_TEXTURE_WRAP_S, desc.wrap.S as _);
 
-        es20::wrapper::tex_parameteri(target as _,
-                                      es20d::GL_TEXTURE_WRAP_T,
-                                      desc.wrap.T as _);
-        es20::wrapper::tex_parameteri(target as _,
-                                      es20d::GL_TEXTURE_MAG_FILTER,
-                                      desc.filter.min as _);
-        es20::wrapper::tex_parameteri(target as _,
-                                      es20d::GL_TEXTURE_MIN_FILTER,
-                                      desc.filter.mag as _);
-        es20::wrapper::bind_texture(desc.texture_type as _, 0);
+        gl_tex_parameteri(target as _, es20d::GL_TEXTURE_WRAP_T, desc.wrap.T as _);
+        gl_tex_parameteri(
+            target as _,
+            es20d::GL_TEXTURE_MAG_FILTER,
+            desc.filter.min as _,
+        );
+        gl_tex_parameteri(
+            target as _,
+            es20d::GL_TEXTURE_MIN_FILTER,
+            desc.filter.mag as _,
+        );
+        gl_bind_texture(desc.texture_type as _, 0);
 
         Texture {
             desc: desc.clone(),
@@ -207,46 +199,45 @@ impl Texture {
         }
     }
 
-
     pub fn new_with(desc: &TextureDesc, use_swizzel: bool) -> Texture {
-        let raw = es20::wrapper::gen_textures(1)[0];
+        let raw = gl_gen_textures(1)[0];
         let target = desc.texture_type as es20d::GLenum;
 
-        es20::wrapper::bind_texture(target as _, raw);
-        es20::wrapper::tex_parameteri(target as _,
-                                      es20d::GL_TEXTURE_WRAP_S,
-                                      desc.wrap.S as _);
+        gl_bind_texture(target as _, raw);
+        gl_tex_parameteri(target as _, es20d::GL_TEXTURE_WRAP_S, desc.wrap.S as _);
 
-        es20::wrapper::tex_parameteri(target as _,
-                                      es20d::GL_TEXTURE_WRAP_T,
-                                      desc.wrap.T as _);
-        es20::wrapper::tex_parameteri(target as _,
-                                      es20d::GL_TEXTURE_MAG_FILTER,
-                                      desc.filter.min as _);
-        es20::wrapper::tex_parameteri(target as _,
-                                      es20d::GL_TEXTURE_MIN_FILTER,
-                                      desc.filter.mag as _);
+        gl_tex_parameteri(target as _, es20d::GL_TEXTURE_WRAP_T, desc.wrap.T as _);
+        gl_tex_parameteri(
+            target as _,
+            es20d::GL_TEXTURE_MAG_FILTER,
+            desc.filter.min as _,
+        );
+        gl_tex_parameteri(
+            target as _,
+            es20d::GL_TEXTURE_MIN_FILTER,
+            desc.filter.mag as _,
+        );
 
         //version 30 operation:
         /* unsafe {
-             es20::wrapper::tex_parameteri(target as _,
+             gl_tex_parameteri(target as _,
                                            es30d::GL_TEXTURE_SWIZZLE_R,
                                            desc.swizzle.R as es20d::GLenum);
 
-             es20::wrapper::tex_parameteri(target as _,
+             gl_tex_parameteri(target as _,
                                            es30d::GL_TEXTURE_SWIZZLE_G,
                                            desc.swizzle.G as es20d::GLenum);
 
-             es20::wrapper::tex_parameteri(target as _,
+             gl_tex_parameteri(target as _,
                                            es30d::GL_TEXTURE_SWIZZLE_B,
                                            desc.swizzle.B as es20d::GLenum);
-             es20::wrapper::tex_parameteri(target as _,
+             gl_tex_parameteri(target as _,
                                            es30d::GL_TEXTURE_SWIZZLE_A,
                                            desc.swizzle.A as es20d::GLenum);
          }
          */
 
-        es20::wrapper::bind_texture(desc.texture_type as _, 0);
+        gl_bind_texture(desc.texture_type as _, 0);
 
         Texture {
             desc: desc.clone(),
@@ -262,18 +253,22 @@ impl Texture {
     pub fn set_minification_filter(&mut self, filter: FilterMode) {
         self.bind();
         self.desc.filter.min = filter;
-        es20::wrapper::tex_parameteri(self.desc.texture_type as _,
-                                      es20d::GL_TEXTURE_MAG_FILTER,
-                                      self.desc.filter.min as _);
+        gl_tex_parameteri(
+            self.desc.texture_type as _,
+            es20d::GL_TEXTURE_MAG_FILTER,
+            self.desc.filter.min as _,
+        );
         self.unbind();
     }
 
     pub fn set_magnification_filter(&mut self, filter: FilterMode) {
         self.bind();
         self.desc.filter.mag = filter;
-        es20::wrapper::tex_parameteri(self.desc.texture_type as _,
-                                      es20d::GL_TEXTURE_MAG_FILTER,
-                                      self.desc.filter.mag as _);
+        gl_tex_parameteri(
+            self.desc.texture_type as _,
+            es20d::GL_TEXTURE_MAG_FILTER,
+            self.desc.filter.mag as _,
+        );
         self.unbind();
     }
 
@@ -286,62 +281,72 @@ impl Texture {
     pub fn set_lod_bias(&mut self, lod_bias: f32) {
         //TODO:
     }
+
     pub fn set_wrap(&mut self, wrap: Wrap) {
         self.bind();
         self.desc.wrap = wrap.clone();
-        es20::wrapper::tex_parameteri(self.desc.texture_type as _,
-                                      es20d::GL_TEXTURE_WRAP_S,
-                                      wrap.S as _);
+        gl_tex_parameteri(
+            self.desc.texture_type as _,
+            es20d::GL_TEXTURE_WRAP_S,
+            wrap.S as _,
+        );
 
-        es20::wrapper::tex_parameteri(self.desc.texture_type as _,
-                                      es20d::GL_TEXTURE_WRAP_T,
-                                      wrap.T as _);
+        gl_tex_parameteri(
+            self.desc.texture_type as _,
+            es20d::GL_TEXTURE_WRAP_T,
+            wrap.T as _,
+        );
         self.unbind();
     }
 
     pub fn set_max_anisotropy(&mut self) {
         //TODO: Sampler Object Property
     }
-    pub fn set_image<T>(&mut self, pixel_format: DataFormat,
-                        data: &[T], pixel_type: DataKind) {
-
+    pub fn set_image<T>(&mut self, pixel_format: DataFormat, data: &[T], pixel_type: DataKind) {
         self.current_out_pixel_type = pixel_type;
         self.current_out_pixel_format = pixel_format;
 
         self.bind();
-        es20::wrapper::tex_image_2d(self.desc.texture_type as _,
-                                    self.desc.level as _,
-                                    self.desc.format as _,
-                                    self.desc.size.width as _,
-                                    self.desc.size.height as _,
-                                    self.desc.board_size as _,
-                                    pixel_format as _,
-                                    pixel_type as _,
-                                    data,
+        gl_tex_image_2d(
+            self.desc.texture_type as _,
+            self.desc.level as _,
+            self.desc.format as _,
+            self.desc.size.width as _,
+            self.desc.size.height as _,
+            self.desc.board_size as _,
+            pixel_format as _,
+            pixel_type as _,
+            data,
         );
 
         if self.desc.use_mip_map {
-            es20::wrapper::generate_mipmap(self.desc.texture_type as _);
+            gl_generate_mipmap(self.desc.texture_type as _);
         }
         self.unbind();
     }
-    pub fn set_sub_image<T>(&mut self,
-                         offset_x: u32, offset_y: u32,
-                        width: u32, height: u32, data: &[T]) {
+    pub fn set_sub_image<T>(
+        &mut self,
+        offset_x: u32,
+        offset_y: u32,
+        width: u32,
+        height: u32,
+        data: &[T],
+    ) {
         self.bind();
-        es20::wrapper::tex_sub_image_2d(self.desc.texture_type as _,
-                                    self.desc.level as _,
-                                    offset_x as _,
-                                    offset_y as _,
-                                    width as _,
-                                    height as _,
-                                    self.current_out_pixel_format as _,
-                                    self.current_out_pixel_type as _,
-                                    data,
+        gl_tex_sub_image_2d(
+            self.desc.texture_type as _,
+            self.desc.level as _,
+            offset_x as _,
+            offset_y as _,
+            width as _,
+            height as _,
+            self.current_out_pixel_format as _,
+            self.current_out_pixel_type as _,
+            data,
         );
 
         if self.desc.use_mip_map {
-            es20::wrapper::generate_mipmap(self.desc.texture_type as _);
+            gl_generate_mipmap(self.desc.texture_type as _);
         }
         self.unbind();
     }
@@ -352,28 +357,28 @@ impl Texture {
 
     pub fn set_compressed_sub_image(&mut self) {
         //TODO: 与非压缩版区别是image_size参数
-//        self.bind();
-//        es20::wrapper::compressed_tex_sub_image_2d(self.desc.texture_type as _,
-//                                        self.desc.level as _,
-//                                        offset_x as _,
-//                                        offset_y as _,
-//                                        width as _,
-//                                        height as _,
-//                                        self.current_out_pixel_format as _,
-//                                        self.current_out_pixel_type as _,
-//                                        data,
-//        );
-//
-//        if self.use_mip_map {
-//            es20::wrapper::generate_mipmap(self.desc.texture_type as _);
-//        }
-//        self.unbind();
+        //        self.bind();
+        //        gl_compressed_tex_sub_image_2d(self.desc.texture_type as _,
+        //                                        self.desc.level as _,
+        //                                        offset_x as _,
+        //                                        offset_y as _,
+        //                                        width as _,
+        //                                        height as _,
+        //                                        self.current_out_pixel_format as _,
+        //                                        self.current_out_pixel_type as _,
+        //                                        data,
+        //        );
+        //
+        //        if self.use_mip_map {
+        //            gl_generate_mipmap(self.desc.texture_type as _);
+        //        }
+        //        self.unbind();
     }
 
     pub fn generate_mipmap(&self) {
         self.bind();
         if self.desc.use_mip_map {
-            es20::wrapper::generate_mipmap(self.desc.texture_type as _);
+            gl_generate_mipmap(self.desc.texture_type as _);
         }
         self.unbind();
     }
@@ -387,53 +392,47 @@ impl Texture {
     }
 
     #[inline]
-    pub fn bind(&self) {
-        unsafe {
-            es20::ffi::glBindTexture(self.desc.texture_type as _, self.id);
-        }
+    pub fn bind(&self) -> &Self {
+        gl_bind_texture(self.desc.texture_type as _, self.id);
+        self
     }
 
     #[inline]
-    pub fn unbind(&self) {
-        unsafe {
-            es20::ffi::glBindTexture(self.desc.texture_type as _, 0);
-        }
+    pub fn unbind(&self) -> &Self {
+        gl_bind_texture(self.desc.texture_type as _, 0);
+        self
     }
 
-//    #[inline(always)]
-//    pub fn id(&self) -> GLuint {
-//        self.id
-//    }
-//    #[inline(always)]
-//    pub fn width(&self) -> usize {
-//        self.desc.size.width as usize
-//    }
-//    #[inline(always)]
-//    pub fn height(&self) -> usize {
-//        self.desc.size.height as usize
-//    }
-//
-//    #[inline(always)]
-//    pub fn format(&self) -> DataFormat {
-//        self.format
-//    }
-//    #[inline(always)]
-//    pub fn filter(&self) -> FilterMode {
-//        self.filter
-//    }
-//    #[inline(always)]
-//    pub fn wrap(&self) -> Wrap {
-//        self.wrap
-//    }
-//    #[inline(always)]
-//    pub fn mipmap(&self) -> bool {
-//        self.mipmap
-//    }
+    //    #[inline(always)]
+    //    pub fn width(&self) -> usize {
+    //        self.desc.size.width as usize
+    //    }
+    //    #[inline(always)]
+    //    pub fn height(&self) -> usize {
+    //        self.desc.size.height as usize
+    //    }
+    //
+    //    #[inline(always)]
+    //    pub fn format(&self) -> DataFormat {
+    //        self.format
+    //    }
+    //    #[inline(always)]
+    //    pub fn filter(&self) -> FilterMode {
+    //        self.filter
+    //    }
+    //    #[inline(always)]
+    //    pub fn wrap(&self) -> Wrap {
+    //        self.wrap
+    //    }
+    //    #[inline(always)]
+    //    pub fn mipmap(&self) -> bool {
+    //        self.mipmap
+    //    }
 }
 
 impl Drop for Texture {
     fn drop(&mut self) {
-        es20::wrapper::delete_textures(&[self.id]);
+        gl_delete_textures(&[self.id]);
         self.id = 0;
     }
 }
