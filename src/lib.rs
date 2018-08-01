@@ -12,6 +12,7 @@ mod texture;
 mod color;
 mod attribute;
 mod attribute_layout;
+mod buffer;
 
 static SIMPLE_VERTEX_DATA: [f32; 16] = [
     //   position     uv
@@ -76,20 +77,29 @@ pub mod android {
         program.activate();
 
         let mut texture = texture::Texture::new("test texture", texture::Extend::new(1024, 768, 8));
-        let bind_res = texture.bind();
+        let bind_texture_res = texture.bind();
+
+        let mut buffer = buffer::Buffer::new("test buffer");
+        let bind_buffer_res = buffer.bind();
 
         if cfg!(target_os = "android") {
             android_logger::init_once(Filter::default()
                 .with_min_level(Level::Trace));
             trace!("{} android logger init .... ", LOG_TAG);
 
-            match bind_res {
+            match bind_texture_res {
                 Ok(_) => trace!("{} texture bind OK .... ", LOG_TAG),
                 Err(error_desc) => trace!("{} texture bind fail {} .... ", LOG_TAG, error_desc)
             }
 
+            match bind_buffer_res {
+                Ok(_) => trace!("{} texture buffer OK .... ", LOG_TAG),
+                Err(error_desc) => trace!("{} buffer bind fail {} .... ", LOG_TAG, error_desc)
+            }
+
             trace!("{} program {:?} .... ", LOG_TAG, program);
             trace!("{} texture {:?} .... ", LOG_TAG, texture);
+            trace!("{} texture {:?} .... ", LOG_TAG, buffer);
         }
 
         0 as jlong
