@@ -11,7 +11,7 @@ use gles::es32;
 use format::*;
 
 #[derive(Debug, Clone, Hash)]
-pub(crate) struct Attribute {
+pub struct Attribute {
     pub name: String,
     pub kind: AttributeKind,
     pub item_count: usize,
@@ -22,7 +22,7 @@ pub(crate) struct Attribute {
 
 impl Attribute {
     #[inline]
-    pub fn new(name: &str, kind: AttributeKind, count: usize) -> Self {
+    pub fn new(name: &str, kind: AttributeKind) -> Self {
         let (item_count, item_kind, size) = kind.item_data();
 
         Attribute {

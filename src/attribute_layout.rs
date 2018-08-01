@@ -11,9 +11,10 @@ use gles::es32;
 //
 use format::*;
 use attribute::Attribute;
+use buffer;
 
 #[derive(Debug)]
-struct AttributeLayout {
+pub struct AttributeLayout {
     attributes: Vec<Attribute>,
     total_size: usize
 }
@@ -30,9 +31,9 @@ impl AttributeLayout {
         self.total_size
     }
 
-    pub fn add_attribute(&mut self, attribute : Attribute) {
-        self.total_size += attribute.size;
-        self.attributes.push(attribute);
+    pub fn add_attribute(&mut self, new_attribute : Attribute) {
+        self.total_size += new_attribute.size;
+        self.attributes.push(new_attribute);
     }
 
     pub fn enable(&mut self) -> Result<(), String> {
