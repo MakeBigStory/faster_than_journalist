@@ -11,7 +11,6 @@ use std::fmt::Formatter;
 use std::mem;
 use std::ptr;
 use texture::*;
-use framebuffer::Range2D;
 
 #[derive(Copy, Clone, Debug)]
 pub enum AttachmentType<'a> {
@@ -44,11 +43,16 @@ pub enum FrameBufferUsage {
     ReadWrite = GL_FRAMEBUFFER as isize,
 }
 
-struct Range2D<T> {
+pub struct Range2D<T> {
     x: T,
     y: T,
     width: T,
     height: T,
+}
+
+pub struct Vector2<T> {
+    x: T,
+    y: T,
 }
 
 /// Mask for framebuffer clearing
@@ -88,12 +92,17 @@ pub(crate) struct FrameBuffer<'a> {
 impl<'a> FrameBuffer<'a> {
     #[inline(always)]
     pub fn new(label: String) -> Self {
-        let id = gen_framebuffers(1)[0];
+        let id = gl_gen_framebuffers(1)[0];
         FrameBuffer {
             label,
             status: FrameBufferStatus::IncompleteAttachment,
             id,
-//            viewport: Range2D<i32>::new(),
+            viewport: Range2D {
+                x: 0,
+                y: 0,
+                width: 0,
+                height: 0,
+            },
             num: 0,
             usage: FrameBufferUsage::ReadWrite,
             attachments: Vec::new(),
@@ -235,15 +244,16 @@ impl<'a> FrameBuffer<'a> {
     /// * `attachments` - Attachments to invalidate
     pub fn invalidate(&mut self, attachments: &[InvalidationAttachment]) {}
 
-    //todo: useless? when use state?
-    fn attach_cube_map_texture(&mut self) {
-        unimplemented!()
+    pub fn attach_cube_map_texture(&self) -> &Self {
+        self
     }
-    fn attach_texture_layer(&mut self) {
-        unimplemented!()
+
+    pub fn attach_texture_layer(&self) -> &Self {
+        self
     }
-    fn set_viewport(&mut self) {
-        unimplemented!()
+
+    pub fn set_viewport(&self) -> &Self {
+        self
     }
 
     /// Clear specified buffers in framebuffer
@@ -303,14 +313,10 @@ impl<'a> FrameBuffer<'a> {
 
 impl FrameBuffer {
     /// Max supported viewport size
-    pub fn max_viewport_size() -> Vector2i {
-
-    }
+    pub fn max_viewport_size() -> Vector2<i32> {}
 
     /// Max supported draw buffer count
-    pub fn max_draw_buffers() -> i32 {
-
-    }
+    pub fn max_draw_buffers() -> i32 {}
 
     // todo: deal with es 3.x
     /// Max supported color attachment count
