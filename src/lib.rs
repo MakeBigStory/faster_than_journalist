@@ -10,6 +10,8 @@ mod sampler;
 mod format;
 mod texture;
 mod color;
+mod attribute;
+mod attribute_layout;
 
 static SIMPLE_VERTEX_DATA: [f32; 16] = [
     //   position     uv

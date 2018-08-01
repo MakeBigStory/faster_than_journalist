@@ -359,7 +359,7 @@ pub enum FrameBufferStatus {
 }
 
 #[derive(Copy, Clone, Debug, Hash)]
-pub enum AttributeKind{
+pub enum AttributeKind {
     Bool = es20d::GL_BOOL as isize,
     Int = es20d::GL_INT as isize,
     Float = es20d::GL_FLOAT as isize,
@@ -376,23 +376,24 @@ pub enum AttributeKind{
 
 impl AttributeKind {
     #[inline]
-    pub fn item_data(&self) -> (usize, DataKind) {
+    pub fn item_data(&self) -> (usize, DataKind, usize) {
         match self {
-            &AttributeKind::Bool => (1, DataKind::Bool),
-            &AttributeKind::Int => (1, DataKind::Int),
-            &AttributeKind::Float => (1, DataKind::Float),
+            // TODO: mem::size_of ugly
+            &AttributeKind::Bool => (1, DataKind::Bool, mem::size_of::<es20d::GLboolean>()),
+            &AttributeKind::Int => (1, DataKind::Int, mem::size_of::<es20d::GLint>()),
+            &AttributeKind::Float => (1, DataKind::Float, mem::size_of::<es20d::GLfloat>()),
 
-            &AttributeKind::BoolVec2 => (2, DataKind::Bool),
-            &AttributeKind::IntVec2 => (2, DataKind::Int),
-            &AttributeKind::FloatVec2 => (2, DataKind::Float),
+            &AttributeKind::BoolVec2 => (2, DataKind::Bool, 2*mem::size_of::<es20d::GLboolean>()),
+            &AttributeKind::IntVec2 => (2, DataKind::Int, 2*mem::size_of::<es20d::GLint>()),
+            &AttributeKind::FloatVec2 => (2, DataKind::Float, 2*mem::size_of::<es20d::GLfloat>()),
 
-            &AttributeKind::BoolVec3 => (3, DataKind::Bool),
-            &AttributeKind::IntVec3 => (3, DataKind::Int),
-            &AttributeKind::FloatVec3 => (3, DataKind::Float),
+            &AttributeKind::BoolVec3 => (3, DataKind::Bool, 3*mem::size_of::<es20d::GLboolean>()),
+            &AttributeKind::IntVec3 => (3, DataKind::Int, 3*mem::size_of::<es20d::GLint>()),
+            &AttributeKind::FloatVec3 => (3, DataKind::Float, 3*mem::size_of::<es20d::GLfloat>()),
 
-            &AttributeKind::BoolVec4 => (4, DataKind::Bool),
-            &AttributeKind::IntVec4 => (4, DataKind::Int),
-            &AttributeKind::FloatVec4 => (4, DataKind::Float),
+            &AttributeKind::BoolVec4 => (4, DataKind::Bool, 4*mem::size_of::<es20d::GLboolean>()),
+            &AttributeKind::IntVec4 => (4, DataKind::Int, 4*mem::size_of::<es20d::GLint>()),
+            &AttributeKind::FloatVec4 => (4, DataKind::Float, 4*mem::size_of::<es20d::GLfloat>()),
         }
     }
 }
