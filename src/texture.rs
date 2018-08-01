@@ -66,7 +66,7 @@ impl<T> Extend<T> {
 }
 
 #[derive(Clone, Debug)]
-pub struct TextureState {
+struct TextureState {
     pub wrap_mode: Option<Wrap>,
     pub filter_mode: Option<Filter>,
     pub swizzle_mode: Option<Swizzle>
