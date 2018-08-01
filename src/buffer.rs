@@ -16,150 +16,135 @@ use std::mem;
 
 use format::*;
 
-#[derive(Debug, Clone, Hash)]
-pub struct BufferDesc {
-    pub label: String,
-    pub target: BufferType,
-    pub usage: BufferUsage,
-    pub size: u32,
-    pub kind: DataKind,
-    pub stride: u32,
-}
-
-impl BufferDesc {
-    fn new(label: String, target: BufferType, usage: BufferUsage, size: u32,
-           kind: DataKind, stride:u32)
-           -> BufferDesc {
-        BufferDesc {
-            label,
-            target,
-            usage,
-            size,
-            kind,
-            stride,
-        }
-    }
-
-    fn set_label(&mut self, label: String) {
-        self.label = label;
-    }
-
-    fn get_label(&self) -> &String {
-        &self.label
-    }
-}
-
 #[derive(Clone, Debug, Hash)]
 pub struct Buffer {
-    pub desc: BufferDesc,
-    pub raw: Option<u32>,
-}
-
-impl PartialEq for Buffer{
-    fn eq(&self, other: &Buffer) -> bool {
-        match self.raw {
-            Some(id) => {
-                match other.raw {
-                    Some(other_id) => {
-                        id == other_id
-                    },
-                    None=>{
-                        false
-                    }
-                }
-            },
-            None=>{false}
-        }
-    }
+    pub name: String,
+    pub target: BufferType,
+    pub usage: BufferUsage,
+    size: usize,
+    buffer_id : u32,
+    ready: bool
 }
 
 impl Buffer {
-    //if allocate a buffer without size, we will get size when write data automatically
-    pub fn new(desc: &BufferDesc) -> Self {
-        let raw = es20::wrapper::gen_buffers(1)[0];
-
-        let target = desc.target.clone() as es20d::GLenum;
-        let usage = desc.usage as u32;
-
-        es20::wrapper::bind_buffer(target, raw);
-        es20::wrapper::buffer_data(target,
-                                   desc.size as es20d::GLsizeiptr,
-                                   ptr::null(),
-                                   usage);
-        es20::wrapper::bind_buffer(target, 0);
-
+    pub fn new(name: &str) -> Self {
         Buffer {
-            desc: desc.clone(),
-            raw: Some(raw)
+            name: name.to_string(),
+            target: BufferType::ArrayBuffer,
+            usage: BufferUsage::StaticDraw,
+            size: 0,
+            buffer_id : 0,
+            ready: false
         }
     }
 
-    pub fn new_with_data<T>(name: String, desc: &BufferDesc, data: &[T]) -> Buffer {
-        let raw = es20::wrapper::gen_buffers(1)[0];
-        let target = desc.target as u32;
-        let usage = desc.usage as u32;
+    fn set_target(&mut self, target: BufferType) -> &mut Self {
+        self.target = target;
+        self
+    }
 
-        let real_size =  data.len() as usize * mem::size_of::<T>();
-        if real_size != desc.size as usize {
-            panic!("Buffer::new_with_data: data bytes greater than  GPUMemory size {:?}", desc);
+    fn set_usage(&mut self, usage: BufferUsage) -> &mut Self {
+        self.usage = usage;
+        self
+    }
+
+    fn init(&mut self) -> Result<(), String> {
+        if self.ready {
+            return Ok(())
         }
 
-        es20::wrapper::bind_buffer(target, raw);
-        es20::wrapper::buffer_data(target,
-                                   desc.size as es20d::GLsizeiptr,
+        let buffer_id = es20::wrapper::gen_buffers(1)[0];
+
+        match buffer_id {
+            0 => Err("Fail to generate buffer !!!"),
+            _ => {
+                self.buffer_id = buffer_id;
+                Ok(())
+            }
+        }?;
+
+        self.ready = true;
+
+        Ok(())
+    }
+
+    // TODO: error check
+    pub fn bind(&mut self) -> Result<(), String> {
+        if !self.ready {
+            self.init()?;
+        }
+
+        // TODO: wrapper param should be more precise
+        es20::wrapper::bind_buffer(self.target as u32, self.buffer_id);
+        Ok(())
+    }
+
+    // TODO: error check
+    // TODO: unbind as static method ?
+    pub fn unbind(&mut self) -> Result<(), String> {
+
+        // TODO: wrapper param should be more precise
+        es20::wrapper::bind_buffer(self.target as u32, 0);
+        Ok(())
+    }
+
+    pub fn set_data<T>(&mut self, data: &[T]) -> Result<(), String> {
+        self.bind()?;
+
+        self.size = data.len() * mem::size_of::<T>();
+
+        // TODO: wrapper param should be more precise
+        // TODO: error check
+        es20::wrapper::buffer_data(self.target as u32,
+                                   self.size as i32,
                                    data.as_ptr() as * const es20d::GLvoid,
-                                   usage);
-        es20::wrapper::bind_buffer(target, 0);
+                                   self.usage as u32);
 
-        Buffer {
-            desc: desc.clone(),
-            raw: Some(raw),
-        }
+        self.unbind()?;
+
+        Ok(())
     }
 
     //todo: CPU data unpack to GPU,高版本或许可以使用mapbufferRange来实现高速资源拷贝
-    pub fn write_sub_buffer_data<T>(&self, offset: u32, size: u32, data :&[T])
-        -> Option<&Buffer> {
-        if self.desc.size == 0 {
-            eprintln!("Buffer::write_data: hasn't been allocate a GPUMemory {:?}", self);
-            return None;
-        }
+    pub fn write_sub_buffer_data<T>(&mut self, offset: u32, size: u32, data :&[T])
+        -> Result<(), String> {
+// TODO: 下面的安全校验可以单独抽为Validation
+//        if self.size == 0 {
+//            eprintln!("Buffer::write_data: hasn't been allocate a GPUMemory {:?}", self);
+//            return None;
+//        }
+//
+//        let mut real_size = size;
+//        if (offset + size) > self.size {
+//            eprintln!("Buffer::write_data: override GPUMemory {:?}, do clamp Operation", self.desc);
+//            real_size = &self.size - offset;
+//        }
 
-        let mut real_size = size;
-        if (offset + size) > self.desc.size {
-            eprintln!("Buffer::write_data: override GPUMemory {:?}, do clamp Operation", self.desc);
-            real_size = &self.desc.size - offset;
-        }
+        self.bind()?;
 
-        let target = self.desc.target as u32;
-        self.bind();
-        es20::wrapper::buffer_sub_data(target,
+        let sub_data_size = data.len() * mem::size_of::<T>();
+
+        // TODO: error check
+        es20::wrapper::buffer_sub_data(self.target as u32,
                                        offset as _,
-                                       real_size as _,
+                                       sub_data_size as i32,
                                        data.as_ptr() as *const es20d::GLvoid);
-        self.unbind();
-        Some(&self)
-    }
+        self.unbind()?;
 
-    fn bind(&self){
-        let target = self.desc.target as u32;
-        es20::wrapper::bind_buffer(target, self.raw.unwrap());
-    }
-
-    fn unbind(&self){
-        let target = self.desc.target as u32;
-        es20::wrapper::bind_buffer(target, 0);
+        Ok(())
     }
 }
 
 impl Drop for Buffer {
     fn drop(&mut self) {
-        match self.raw {
-            Some(id) => {
-                es20::wrapper::delete_buffers(&[id]);
-                self.raw = None;
-            },
-            _ => {}
+        if self.ready {
+            // TODO: glIsBuffer check
+            // TODO: wrapper can be more friendly, no need array, but just a number
+            let buffer_ids = [self.buffer_id];
+            es20::wrapper::delete_buffers(&buffer_ids);
+
+            self.ready = false;
+            self.buffer_id = 0;
         }
     }
 }
