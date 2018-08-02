@@ -41,7 +41,7 @@ impl Shader {
             can_reuse: false,
             version: ShaderLanguageVersion::Version100,
             shader_id: 0,
-            ready: true
+            ready: false
         }
     }
 
@@ -145,6 +145,7 @@ impl Shader {
 
     // TODO: 和静态的create_shader命名冲突，暂时加上aux前缀区分
     fn aux_create_shader(&mut self) -> Result<(), String> {
+        // TODO: is_valid_shader has cost ?
         let need_recreate_shader: bool = !self.can_reuse || !Shader::is_valid_shader(self.shader_id);
 
         if false == need_recreate_shader {
@@ -154,6 +155,7 @@ impl Shader {
 
             match create_res {
                 Ok(new_shader_id) => {
+                    // TODO: is_valid_shader has cost ?
                     match Shader::is_valid_shader(new_shader_id) {
                         true => {
                             self.shader_id = new_shader_id;
@@ -169,7 +171,7 @@ impl Shader {
 
     pub fn set_source(&mut self, new_source: &str) {
         self.source = new_source.to_string();
-        self.ready = true;
+        self.ready = false;
     }
 
     pub fn attach(&mut self, program_id : GLuint) -> Result<(), String> {

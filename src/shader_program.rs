@@ -1,9 +1,13 @@
 use std::collections::HashMap;
 
+use gles::es20::data_struct::GL_TRUE;
+use gles::es20::data_struct::GL_LINK_STATUS;
+use gles::es20::data_struct::GL_INFO_LOG_LENGTH;
 use gles::es20::data_struct::GLuint;
 use gles::es20::wrapper;
 use shader::Shader;
 use shader::ShaderType;
+use attribute::Attribute;
 
 #[derive(Debug)]
 pub struct ShaderProgram {
@@ -11,7 +15,6 @@ pub struct ShaderProgram {
     //    transform_feedback_varying_names: [String],
     program_id: GLuint,
     enable_program_pipeline: bool,
-    shader_count: u8,
     enable_merge_vertex_buffer_array: bool,
     ready: bool,
     can_reuse: bool,
@@ -26,7 +29,6 @@ impl ShaderProgram {
         let mut program = ShaderProgram {
             program_id: 0,
             enable_program_pipeline: false,
-            shader_count: 0,
             enable_merge_vertex_buffer_array: false,
             label: String::from(""),
             //            transform_feedback_varying_names: ,
@@ -121,6 +123,37 @@ impl ShaderProgram {
         self.ready
     }
 
+    pub fn compile(&mut self) -> Result<(), String> {
+        if !self.ready {
+            self.aux_create_program()?;
+
+            for (shader_name, shader) in &mut self.shader_collection {
+                shader.attach(self.program_id)?;
+            }
+
+            // TODO: too simple too make below code a as method
+            ShaderProgram::link_program(self.program_id)?;
+
+            self.ready = true;
+        }
+
+        Ok(())
+    }
+
+    // TODO: may be better interface ?
+    pub fn fill_attribute(&mut self, attribute: &mut Attribute) -> Result<(), String> {
+        if !self.is_ready() {
+            self.compile()?;
+        }
+
+        // TODO: get_attrib_location as program's method?
+        let location_id = wrapper::get_attrib_location(self.program_id,
+                                                       &attribute.name);
+        attribute.set_location(location_id as isize);
+
+        Ok(())
+    }
+
     pub fn add_shader(&mut self, shader: Shader) {
         self.shader_collection.insert(shader.label.clone(), shader);
         self.ready = false;
@@ -148,18 +181,7 @@ impl ShaderProgram {
 
     /// use current program
     pub fn activate(&mut self) -> Result<(), String> {
-        if !self.ready {
-            for (shader_name, shader) in &mut self.shader_collection {
-                shader.compile()?;
-            }
-
-            self.aux_create_program()?;
-
-            // TODO: too simple too make below code a as method
-            ShaderProgram::link_program(self.program_id)?;
-
-            self.ready = true;
-        }
+        self.compile()?;
 
         ShaderProgram::use_program(self.program_id)
     }
@@ -171,35 +193,21 @@ impl ShaderProgram {
     }
 
     #[inline]
-    pub fn get_program_log() -> String {
-        //        let mut status = 0;
-        //
-        //        unsafe { gl::GetProgramiv(program, gl::LINK_STATUS, &mut status) };
-        //
-        //        if status != (gl::TRUE as GLint) {
-        //            let mut len: GLint = 0;
-        //            unsafe {
-        //                gl::GetProgramiv(program, gl::INFO_LOG_LENGTH, &mut len);
-        //            }
-        //            let mut buf = Vec::with_capacity(len as usize);
-        //            unsafe {
-        //                buf.set_len(len as usize);
-        //                gl::GetProgramInfoLog(
-        //                    program,
-        //                    len,
-        //                    ptr::null_mut(),
-        //                    buf.as_mut_ptr() as *mut GLchar,
-        //                );
-        //            }
-        //            panic!(
-        //                "{}",
-        //                str::from_utf8(&buf)
-        //                    .ok()
-        //                    .expect("ProgramInfoLog not valid utf8")
-        //            );
-        //        }
-        //        program
-        String::from("")
+    pub fn get_program_log(&mut self) -> String {
+        let mut status = 0;
+
+        let link_status = wrapper::get_programiv(self.program_id, GL_LINK_STATUS);
+
+        if status != GL_TRUE {
+            let log_length = wrapper::get_programiv(self.program_id, GL_INFO_LOG_LENGTH);
+
+            match wrapper::get_program_info_log(self.program_id, log_length) {
+                Some(log) => log,
+                None => "Failed to get program log !!!".to_string()
+            }
+        } else {
+            String::from("Program compile OK")
+        }
     }
 
     // todo: 补充设置Attribute, uniform的数据接口
