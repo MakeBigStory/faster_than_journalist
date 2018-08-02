@@ -71,10 +71,20 @@ pub mod android {
         env: JNIEnv,
         _: JClass,
     ) -> jlong {
+
+        android_logger::init_once(Filter::default()
+            .with_min_level(Level::Trace));
+        trace!("{} android logger init .... ", LOG_TAG);
+
         trace!("{} begin create .... ", LOG_TAG);
 
         let mut program = ShaderProgram::create_shader_program(SIMPLE_VERTEX, SIMPLE_FRAGMENT);
-        program.activate();
+        match program.activate() {
+            Ok(_) => trace!("{} program active success {:?}", LOG_TAG, program),
+            Err(error_desc) => trace!("{} program active fail !!! {}", LOG_TAG, error_desc)
+        }
+        trace!("{} program : {:?} ", LOG_TAG, program);
+        trace!("{} program log: {} ", LOG_TAG, program.get_program_log());
 
         let mut texture = texture::Texture::new("test texture", texture::Extend::new(1024, 768, 8));
         let bind_texture_res = texture.bind();
@@ -85,30 +95,37 @@ pub mod android {
         let mut attr_pos = attribute::Attribute::new("position", format::AttributeKind::FloatVec2);
         let mut attr_uv = attribute::Attribute::new("uv", format::AttributeKind::FloatVec2);
 
+        match program.fill_attribute(&mut attr_pos) {
+            Ok(_) => trace!("{} Find attribute pos success .... {:?} ", LOG_TAG, attr_pos),
+            Err(error_desc) => trace!("{} Find attribute pos fail !!! {} ", LOG_TAG, error_desc)
+        }
+
+        match program.fill_attribute(&mut attr_uv) {
+            Ok(_) => trace!("{} Find attribute uv success .... {:?}", LOG_TAG, attr_uv),
+            Err(error_desc) => trace!("{} Find attribute uv fail !!! {} ", LOG_TAG, error_desc)
+        }
+
         let mut attribute_layout = attribute_layout::AttributeLayout::new();
         attribute_layout.add_attribute(attr_pos);
         attribute_layout.add_attribute(attr_uv);
-        attribute_layout.enable();
-
-        if cfg!(target_os = "android") {
-            android_logger::init_once(Filter::default()
-                .with_min_level(Level::Trace));
-            trace!("{} android logger init .... ", LOG_TAG);
-
-            match bind_texture_res {
-                Ok(_) => trace!("{} texture bind OK .... ", LOG_TAG),
-                Err(error_desc) => trace!("{} texture bind fail {} .... ", LOG_TAG, error_desc)
-            }
-
-            match bind_buffer_res {
-                Ok(_) => trace!("{} texture buffer OK .... ", LOG_TAG),
-                Err(error_desc) => trace!("{} buffer bind fail {} .... ", LOG_TAG, error_desc)
-            }
-
-            trace!("{} program {:?} .... ", LOG_TAG, program);
-            trace!("{} texture {:?} .... ", LOG_TAG, texture);
-            trace!("{} buffer {:?} .... ", LOG_TAG, buffer);
+        match attribute_layout.enable() {
+            Ok(_) => trace!("{} attributes enable success .... ", LOG_TAG),
+            Err(error_desc) => trace!("{} attributes enable fail !!! {} ", LOG_TAG, error_desc)
         }
+
+        match bind_texture_res {
+            Ok(_) => trace!("{} texture bind OK .... ", LOG_TAG),
+            Err(error_desc) => trace!("{} texture bind fail {} .... ", LOG_TAG, error_desc)
+        }
+
+        match bind_buffer_res {
+            Ok(_) => trace!("{} texture buffer OK .... ", LOG_TAG),
+            Err(error_desc) => trace!("{} buffer bind fail {} .... ", LOG_TAG, error_desc)
+        }
+
+        trace!("{} program {:?} .... ", LOG_TAG, program);
+        trace!("{} texture {:?} .... ", LOG_TAG, texture);
+        trace!("{} buffer {:?} .... ", LOG_TAG, buffer);
 
         0 as jlong
     }
